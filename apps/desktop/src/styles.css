@@ -1,0 +1,3776 @@
+@import "tailwindcss";
+
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #f5f5f5;
+  background: #17171a;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Keep the desktop layout constrained to the actual WebView root.
+   Percentage sizing follows #root directly and avoids a stale JS pixel height
+   after WebView zoom/maximize/resize changes. The explicit minmax row is
+   important: canvas children are very tall, but they must not enlarge the
+   single application row and push bottom-anchored UI outside the window. */
+.app-shell {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.app-shell > main {
+  height: auto;
+  min-height: 0;
+  min-width: 0;
+}
+
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"],
+.ui-selectable {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: default;
+}
+
+::selection {
+  background: rgb(124 58 237 / 45%);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 14%);
+  background-clip: padding-box;
+}
+
+.tiptap {
+  min-height: 62vh;
+  padding: 2rem 0 8rem;
+  color: #e5e5e5;
+  font-size: 16px;
+  line-height: 1.8;
+  outline: none;
+  white-space: pre-wrap;
+}
+
+.tiptap > * + * {
+  margin-top: 0.7em;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  color: #fafafa;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.tiptap h1 {
+  margin-top: 1.4em;
+  font-size: 2rem;
+}
+
+.tiptap h2 {
+  margin-top: 1.25em;
+  font-size: 1.5rem;
+}
+
+.tiptap h3 {
+  margin-top: 1.1em;
+  font-size: 1.2rem;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: #52525b;
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.tiptap ul:not([data-type="taskList"]),
+.tiptap ol {
+  padding-left: 1.5rem;
+}
+
+.tiptap ul:not([data-type="taskList"]) {
+  list-style: disc;
+}
+
+.tiptap ol {
+  list-style: decimal;
+}
+
+.tiptap ul[data-type="taskList"] {
+  margin: 0.8rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0.35rem 0;
+}
+
+.tiptap ul[data-type="taskList"] li > label {
+  margin-top: 0.28rem;
+}
+
+.tiptap ul[data-type="taskList"] li > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.tiptap input[type="checkbox"] {
+  accent-color: #8b5cf6;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid rgb(139 92 246 / 65%);
+  padding-left: 1rem;
+  color: #a3a3a3;
+}
+
+.tiptap code {
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 0.3rem;
+  background: rgb(0 0 0 / 22%);
+  padding: 0.12rem 0.3rem;
+  color: #d8b4fe;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.tiptap pre {
+  overflow-x: auto;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 0.65rem;
+  background: #18181b;
+  padding: 1rem;
+}
+
+.tiptap pre code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #e5e5e5;
+}
+
+.tiptap a {
+  color: #a78bfa;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tiptap mark {
+  border-radius: 0.15rem;
+  background: rgb(250 204 21 / 45%);
+  box-decoration-break: clone;
+  padding: 0.05rem 0.12rem;
+  color: inherit;
+}
+
+.tiptap hr {
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.tiptap .tableWrapper {
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.tiptap table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tiptap th,
+.tiptap td {
+  position: relative;
+  min-width: 90px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  padding: 0.55rem 0.65rem;
+  vertical-align: top;
+}
+
+.tiptap th {
+  background: rgb(255 255 255 / 6%);
+  color: #fafafa;
+  font-weight: 600;
+}
+
+.tiptap .selectedCell::after {
+  position: absolute;
+  inset: 0;
+  background: rgb(139 92 246 / 20%);
+  content: "";
+  pointer-events: none;
+}
+
+.tiptap .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: -2px;
+  width: 4px;
+  background: #8b5cf6;
+  pointer-events: none;
+}
+
+.resize-cursor {
+  cursor: col-resize;
+}
+
+/* Milestone 5: OneNote-style spatial note canvas */
+.note-canvas {
+  background-image: radial-gradient(circle, rgba(255,255,255,.055) 1px, transparent 1px);
+  background-size: 24px 24px;
+  touch-action: none;
+}
+.note-container-editor {
+  min-height: 72px;
+  padding: 10px 14px 16px;
+  outline: none;
+  overflow-wrap: anywhere;
+}
+.note-container-editor > *:first-child { margin-top: 0; }
+.note-container-editor > *:last-child { margin-bottom: 0; }
+.note-container-editor p.is-editor-empty:first-child::before {
+  color: #73737d;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Milestone 5.1: OneNote-like transparent note-container chrome */
+.note-container {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.note-container-outline {
+  border: 1px solid transparent;
+  transition: border-color 100ms ease, box-shadow 100ms ease;
+}
+
+.note-container-chrome,
+.note-container-resize {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 90ms ease;
+}
+
+.note-container:hover > .note-container-outline {
+  border-color: rgba(255,255,255,.18);
+}
+
+.note-container:hover > .note-container-chrome,
+.note-container:hover > .note-container-resize,
+.note-container.is-selected > .note-container-chrome,
+.note-container.is-selected > .note-container-resize {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.note-container.is-selected > .note-container-outline {
+  border-color: rgba(167,139,250,.85);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.16);
+}
+
+.note-container-resize::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(167,139,250,.8);
+  border-bottom: 2px solid rgba(167,139,250,.8);
+}
+
+.note-container-editor {
+  background: transparent;
+}
+
+/* Milestone 6: embedded media, native file drop, and ink */
+.note-container-editor img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: .55rem 0;
+  border-radius: 4px;
+  object-fit: contain;
+}
+.note-container-editor img.ProseMirror-selectednode {
+  outline: 2px solid rgba(167,139,250,.9);
+  outline-offset: 2px;
+}
+.note-attachment-card {
+  display: flex;
+  width: max-content;
+  max-width: 100%;
+  align-items: center;
+  gap: .55rem;
+  margin: .45rem 0;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: .45rem;
+  background: rgba(255,255,255,.045);
+  padding: .5rem .65rem;
+  cursor: default;
+}
+.note-attachment-card:hover { background: rgba(255,255,255,.075); }
+.note-attachment-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e5e5e5; }
+.note-attachment-size { flex: none; color: #71717a; font-size: .72rem; }
+.note-attachment-icon { flex: none; }
+.note-canvas.is-drawing { cursor: crosshair; }
+.note-canvas.is-drop-target { box-shadow: inset 0 0 0 2px rgba(167,139,250,.38); }
+.note-canvas.is-drawing .note-container { pointer-events: none; }
+.note-canvas.is-drawing .canvas-floating-ui { pointer-events: auto; }
+
+/* Milestone 7: selection marquee, page ruling and editable vector shapes */
+.canvas-shape {
+  pointer-events: visiblePainted;
+  cursor: move;
+  vector-effect: non-scaling-stroke;
+}
+.canvas-shape:hover {
+  filter: drop-shadow(0 0 2px rgba(255,255,255,.55));
+}
+.canvas-shape.is-selected {
+  filter: drop-shadow(0 0 3px rgba(167,139,250,.95));
+}
+.note-canvas:not(.is-drawing) {
+  cursor: default;
+}
+
+/* Milestone 8: OneNote parity/stability interaction refinements */
+.note-canvas.is-panning { cursor: grab; }
+.note-canvas.is-panning:active { cursor: grabbing; }
+.note-container:not(.is-selected) .note-container-editor { cursor: text; }
+.note-container.is-selected > .note-container-outline { pointer-events: none; }
+.note-container-editor:focus-within { cursor: text; }
+
+
+/* Milestone 9: OneNote-parity object manipulation */
+.ink-selection-box {
+  border: 1px dashed rgba(167,139,250,.9);
+  background: rgba(139,92,246,.035);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.08);
+}
+.shape-selection-box {
+  border: 1px dashed rgba(167,139,250,.9);
+  transform-origin: center;
+}
+.shape-resize-handle,
+.shape-endpoint-handle,
+.shape-rotate-handle {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255,255,255,.9);
+  background: #8b5cf6;
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.shape-resize-handle { position: absolute; }
+.shape-resize-nw { left: -5px; top: -5px; cursor: nwse-resize; }
+.shape-resize-ne { right: -5px; top: -5px; cursor: nesw-resize; }
+.shape-resize-sw { left: -5px; bottom: -5px; cursor: nesw-resize; }
+.shape-resize-se { right: -5px; bottom: -5px; cursor: nwse-resize; }
+.shape-endpoint-handle { border-radius: 999px; cursor: crosshair; }
+.shape-rotate-stem {
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  width: 1px;
+  height: 20px;
+  background: rgba(167,139,250,.9);
+}
+.shape-rotate-handle {
+  position: absolute;
+  left: calc(50% - 5px);
+  top: -34px;
+  border-radius: 999px;
+  cursor: grab;
+}
+.shape-rotate-handle:active { cursor: grabbing; }
+
+/* Keep embedded media easy to manipulate without turning note containers into cards. */
+.note-container-editor img {
+  user-select: none;
+  -webkit-user-drag: element;
+}
+.note-container-editor img:hover {
+  outline: 1px solid rgba(255,255,255,.16);
+  outline-offset: 2px;
+}
+
+
+/* Milestone 11: stronger OneNote-style multi-object selection feedback */
+.shape-selection-box-multi {
+  border-color: rgba(167,139,250,.82);
+  background: rgba(139,92,246,.025);
+}
+.mixed-selection-box {
+  border: 1px dashed rgba(196,181,253,.88);
+  background: rgba(139,92,246,.018);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.06);
+}
+.canvas-shape.is-selected {
+  filter: drop-shadow(0 0 2px rgba(196,181,253,.95));
+}
+.note-container-editor img.ProseMirror-selectednode {
+  outline: 2px solid rgba(167,139,250,.95);
+  outline-offset: 3px;
+  border-radius: .25rem;
+}
+
+
+/* Milestone 13: print the current page without notebook/navigation chrome. */
+@media print {
+  html, body, #root { background: white !important; color: black !important; overflow: visible !important; }
+  .app-shell { display: block !important; height: auto !important; background: white !important; }
+  .app-shell > aside, .app-shell > section, .no-print, .canvas-floating-ui { display: none !important; }
+  .app-shell > main { display: block !important; overflow: visible !important; background: white !important; color: black !important; }
+  .app-shell > main > .relative.border-b { background: white !important; border: 0 !important; }
+  .app-shell > main > .relative.border-b input { color: black !important; }
+  .note-canvas { overflow: visible !important; min-height: 1100px !important; background: white !important; }
+  .note-container-chrome, .note-container-outline, .mixed-selection-box, .shape-selection-box, .ink-selection-box { display: none !important; }
+}
+
+/* Milestone 14: richer OneNote-style embedded media. */
+.note-container-editor img[data-image-align="left"] {
+  display: block;
+  margin-left: 0;
+  margin-right: auto;
+}
+.note-container-editor img[data-image-align="center"] {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.note-container-editor img[data-image-align="right"] {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+.note-container-editor img[data-image-size="small"] { width: min(260px, 100%) !important; height: auto !important; }
+.note-container-editor img[data-image-size="medium"] { width: min(520px, 100%) !important; height: auto !important; }
+.note-container-editor img[data-image-size="large"] { width: min(900px, 100%) !important; height: auto !important; }
+.note-container-editor img[data-image-rotation="90"] { transform: rotate(90deg); transform-origin: center; }
+.note-container-editor img[data-image-rotation="180"] { transform: rotate(180deg); transform-origin: center; }
+.note-container-editor img[data-image-rotation="270"] { transform: rotate(270deg); transform-origin: center; }
+
+.note-audio-card {
+  margin: .55rem 0;
+  max-width: 560px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: .65rem;
+  background: rgba(255,255,255,.035);
+  padding: .65rem .75rem;
+}
+.note-audio-meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .45rem;
+  min-width: 0;
+  color: rgb(212 212 216);
+  font-size: .78rem;
+}
+.note-audio-icon { flex: 0 0 auto; }
+.note-audio-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.note-audio-size { margin-left: auto; flex: 0 0 auto; color: rgb(113 113 122); font-size: .68rem; }
+.note-audio-player { display: block; width: 100%; height: 34px; }
+
+/* Milestone 14.3: image alignment must move Tiptap's resizable node-view wrapper,
+   not only the <img> inside it. WebKitGTK supports :has() in the Fedora version
+   used by LeNota. */
+.note-container-editor [data-node-view-wrapper]:has(> img[data-image-align="left"]),
+.note-container-editor > div:has(> img[data-image-align="left"]),
+.note-container-editor > span:has(> img[data-image-align="left"]) {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+.note-container-editor [data-node-view-wrapper]:has(> img[data-image-align="center"]),
+.note-container-editor > div:has(> img[data-image-align="center"]),
+.note-container-editor > span:has(> img[data-image-align="center"]) {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.note-container-editor [data-node-view-wrapper]:has(> img[data-image-align="right"]),
+.note-container-editor > div:has(> img[data-image-align="right"]),
+.note-container-editor > span:has(> img[data-image-align="right"]) {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+.note-audio-open {
+  margin-left: .45rem;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: .35rem;
+  padding: .18rem .45rem;
+  color: rgb(196 181 253);
+  background: rgba(139,92,246,.08);
+  font-size: .68rem;
+  cursor: pointer;
+}
+.note-audio-open:hover { background: rgba(139,92,246,.16); color: white; }
+.note-audio-loading,
+.note-audio-playback-error,
+.note-audio-export-note {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  border-radius: .45rem;
+  background: rgba(0,0,0,.12);
+  padding: .35rem .6rem;
+  color: rgb(161 161 170);
+  font-size: .72rem;
+}
+.note-audio-playback-error { color: rgb(252 165 165); }
+.note-audio-native-player {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 34px;
+  border-radius: .5rem;
+  background: rgba(0,0,0,.16);
+  padding: .35rem .55rem;
+}
+.note-audio-play-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: .4rem;
+  background: rgba(255,255,255,.06);
+  color: white;
+  cursor: pointer;
+}
+.note-audio-play-button:hover { background: rgba(139,92,246,.18); }
+.note-audio-seek { flex: 1; min-width: 80px; accent-color: rgb(139 92 246); }
+.note-audio-time { width: 42px; color: rgb(161 161 170); font-size: .72rem; font-variant-numeric: tabular-nums; }
+
+/* Milestone 15: LeNota owns the image node-view instead of relying on
+   WebKit/Tiptap wrapper layout. Alignment is therefore deterministic. */
+.lenota-image-node {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: .45rem 0;
+  padding: 2px 0;
+}
+.lenota-image-frame {
+  position: relative;
+  display: inline-block;
+  min-width: 48px;
+  max-width: 100%;
+  line-height: 0;
+}
+.lenota-image-frame > img {
+  display: block;
+  max-width: 100%;
+  border-radius: .25rem;
+}
+.lenota-image-node.is-selected .lenota-image-selection {
+  pointer-events: none;
+  position: absolute;
+  inset: -3px;
+  border: 1px solid rgb(167 139 250 / .95);
+  border-radius: .3rem;
+  box-shadow: 0 0 0 1px rgb(139 92 246 / .18);
+}
+.lenota-image-resize {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgb(221 214 254);
+  background: rgb(124 58 237);
+  border-radius: 2px;
+  cursor: nwse-resize;
+  z-index: 5;
+}
+.lenota-image-ocr-badge {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  z-index: 6;
+  border: 1px solid rgb(196 181 253 / .45);
+  border-radius: .3rem;
+  background: rgb(24 24 27 / .9);
+  color: rgb(221 214 254);
+  padding: .15rem .35rem;
+  font-size: .62rem;
+  line-height: 1;
+  letter-spacing: .04em;
+}
+
+
+/* Milestone 17: editable KaTeX math atoms. They remain ProseMirror nodes so
+   equations survive copy/paste, undo, search, export, and page versions. */
+.lenota-math-node {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 0 .12rem;
+  padding: .08rem .18rem;
+  border-radius: .3rem;
+  vertical-align: middle;
+  cursor: default;
+}
+.lenota-math-node.is-display {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin: .5rem 0;
+  padding: .35rem .5rem;
+}
+.lenota-math-node:hover { background: rgba(255,255,255,.035); }
+.lenota-math-node.is-selected {
+  outline: 1px solid rgb(167 139 250 / .9);
+  background: rgb(139 92 246 / .08);
+}
+/* A ProseMirror NodeSelection belongs to one editor instance and can survive
+   that editor losing focus. Never render that stale selection as active when
+   its note container is no longer the canvas selection. The editor logic also
+   clears the selection; this rule is the visual safety net for the same frame. */
+.note-container:not(.is-selected) .lenota-math-node.is-selected {
+  outline: none;
+  background: transparent;
+}
+.note-container:not(.is-selected) .lenota-math-node.is-selected > .lenota-math-actions {
+  opacity: 0;
+  pointer-events: none;
+}
+.note-container:not(.is-selected) .lenota-math-node.is-selected > .lenota-math-edit,
+.note-container:not(.is-selected) .lenota-math-node.is-selected > .lenota-math-resize {
+  display: none;
+}
+.lenota-math-render { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; line-height: 1.2; }
+.lenota-math-invalid {
+  border: 1px dashed rgb(251 191 36 / .48);
+  border-radius: .35rem;
+  background: rgb(120 53 15 / .12);
+  padding: .22rem .42rem;
+  color: rgb(253 230 138);
+  font-size: max(.72rem, .38em);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  white-space: nowrap;
+}
+.lenota-math-edit {
+  margin-left: .45rem;
+  border: 1px solid rgb(167 139 250 / .32);
+  border-radius: .3rem;
+  background: rgb(139 92 246 / .12);
+  padding: .12rem .4rem;
+  color: rgb(221 214 254);
+  font-size: .65rem;
+  line-height: 1.2;
+}
+.lenota-math-resize {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgb(207 250 254 / .95);
+  border-radius: 999px;
+  background: rgb(8 145 178);
+  box-shadow: 0 0 0 2px rgb(24 24 27 / .9);
+  cursor: nwse-resize;
+}
+.note-canvas {
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+@media print {
+  .lenota-math-edit, .lenota-math-resize { display: none !important; }
+  .lenota-math-node { outline: none !important; background: transparent !important; }
+}
+
+/* Keep contextual floating controls inside the visible desktop window. */
+.canvas-floating-ui {
+  /* These controls are viewport chrome, not canvas content. Keep them in a
+     high local layer even when the 8000x8000 transformed world contains
+     selected objects with very large z-index values. */
+  z-index: 1000000;
+  max-width: calc(100% - 1.5rem);
+  max-height: calc(100% - 1.5rem);
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.canvas-drawing-toolbar {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap !important;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.canvas-drawing-toolbar::-webkit-scrollbar { display: none; }
+.canvas-drawing-toolbar > * { flex: 0 0 auto; }
+
+/* PDF printout pages keep a stable, page-like gap. The image itself owns the
+   spacing, so loading/replacing its pixels for visual AI cannot change it. */
+.lenota-image-node[data-pdf-printout-page="true"] {
+  margin: 0 0 16px;
+  padding: 0;
+}
+.lenota-image-node[data-pdf-printout-page="true"] .lenota-image-frame > img {
+  margin: 0 !important;
+  border-radius: 0;
+}
+.lenota-image-node[data-pdf-printout-page="true"] + p:has(> br.ProseMirror-trailingBreak):has(+ .lenota-image-node[data-pdf-printout-page="true"]) {
+  display: none;
+}
+[role="dialog"] {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+
+/* Milestone 20.3: font marks are actual note typography, not UI font hints.
+   WebKitGTK can otherwise visually inherit the editor root font in a few
+   nested-mark combinations. The mark writes --ln-font-family itself. */
+.note-container-editor [data-ln-font-family] {
+  font-family: var(--ln-font-family, inherit) !important;
+}
+
+/* Advanced Solve can attach a persistent, locally rendered x/y relation graph
+   inside the same note container. The curve is sampled by LeNota's safe math
+   parser; Gemini only proposes the relation/range. */
+.lenota-math-graph {
+  display: block;
+  width: min(100%, 560px);
+  margin: .65rem auto .35rem;
+  overflow: hidden;
+  border: 1px solid rgb(103 232 249 / .18);
+  border-radius: .7rem;
+  background: rgb(9 9 11 / .36);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .025);
+}
+.lenota-math-graph.is-selected { outline: 1px solid rgb(34 211 238 / .7); outline-offset: 2px; }
+.lenota-math-graph-head { display:flex; align-items:center; gap:.65rem; min-height:2rem; padding:.35rem .55rem; border-bottom:1px solid rgb(255 255 255 / .07); color:rgb(207 250 254); font-size:.72rem; }
+.lenota-math-graph-equation { min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; color:rgb(212 212 216); }
+.lenota-math-graph-remove { margin-left:auto; border-radius:.3rem; padding:.05rem .35rem; color:rgb(161 161 170); font-size:1rem; line-height:1.1; }
+.lenota-math-graph-remove:hover { background:rgb(239 68 68 / .12); color:rgb(254 202 202); }
+.lenota-math-graph-svg { display:block; width:100%; height:auto; min-height:190px; background:rgb(24 24 27 / .42); }
+.lenota-math-graph-grid { stroke:rgb(255 255 255 / .055); stroke-width:1; vector-effect:non-scaling-stroke; }
+.lenota-math-graph-axis { stroke:rgb(212 212 216 / .38); stroke-width:1.15; vector-effect:non-scaling-stroke; }
+.lenota-math-graph-curve { fill:none; stroke:rgb(34 211 238 / .95); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.lenota-math-graph-unavailable,.lenota-math-graph-range { fill:rgb(161 161 170); font-family:ui-sans-serif,system-ui,sans-serif; font-size:12px; }
+.lenota-math-graph-range { font-size:10px; }
+@media print {
+  .lenota-math-graph { border-color:rgb(0 0 0 / .18); background:white; box-shadow:none; }
+  .lenota-math-graph-svg { background:white; }
+  .lenota-math-graph-grid { stroke:rgb(0 0 0 / .08); }
+  .lenota-math-graph-axis { stroke:rgb(0 0 0 / .45); }
+  .lenota-math-graph-curve { stroke:rgb(0 0 0 / .9); }
+  .lenota-math-graph-remove { display:none !important; }
+}
+
+/* Per-equation math actions. The affordance is intentionally invisible until
+   the exact LaTeX node is hovered, selected, or has its temporary menu open. */
+.lenota-math-node.is-display.math-align-left { justify-content: flex-start; }
+.lenota-math-node.is-display.math-align-center { justify-content: center; }
+.lenota-math-node.is-display.math-align-right { justify-content: flex-end; }
+.lenota-math-actions {
+  position: absolute;
+  z-index: 45;
+  right: -2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease;
+  font-size: 12px;
+  line-height: 1;
+}
+.lenota-math-node.is-display .lenota-math-actions {
+  right: .45rem;
+}
+.lenota-math-node:hover > .lenota-math-actions,
+.lenota-math-node.is-selected > .lenota-math-actions,
+.lenota-math-node.has-open-actions > .lenota-math-actions,
+.lenota-math-actions.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.lenota-math-more {
+  display: grid;
+  min-width: 29px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / .14);
+  border-radius: 999px;
+  background: rgb(30 30 34 / .94);
+  color: rgb(212 212 216);
+  box-shadow: 0 4px 18px rgb(0 0 0 / .2);
+  font: 700 12px/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .08em;
+  cursor: pointer;
+}
+.lenota-math-more:hover,
+.lenota-math-actions.is-open .lenota-math-more {
+  border-color: rgb(167 139 250 / .7);
+  background: rgb(76 29 149 / .35);
+  color: rgb(221 214 254);
+  box-shadow: 0 0 0 1px rgb(139 92 246 / .16), 0 5px 20px rgb(0 0 0 / .3);
+}
+.lenota-math-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 144px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / .12);
+  border-radius: .65rem;
+  background: rgb(29 29 33 / .98);
+  padding: .3rem;
+  color: rgb(228 228 231);
+  box-shadow: 0 14px 36px rgb(0 0 0 / .42), inset 0 1px 0 rgb(255 255 255 / .035);
+  backdrop-filter: blur(12px);
+}
+.lenota-math-node.is-display.math-align-right .lenota-math-menu { right: .1rem; }
+.lenota-math-menu > button[role="menuitem"] {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: .55rem;
+  border-radius: .42rem;
+  padding: .45rem .5rem;
+  color: rgb(212 212 216);
+  font: 500 12px/1.2 ui-sans-serif, system-ui, sans-serif;
+  text-align: left;
+}
+.lenota-math-menu > button[role="menuitem"]:hover:not(:disabled) {
+  background: rgb(139 92 246 / .16);
+  color: rgb(233 213 255);
+}
+.lenota-math-menu > button[role="menuitem"]:disabled {
+  color: rgb(113 113 122);
+  cursor: not-allowed;
+}
+.lenota-math-menu-divider {
+  height: 1px;
+  margin: .28rem .15rem;
+  background: rgb(255 255 255 / .08);
+}
+.lenota-math-align-menu {
+  display: grid;
+  grid-template-columns: 1fr repeat(3, 25px);
+  align-items: center;
+  gap: .18rem;
+  padding: .18rem .22rem .12rem .45rem;
+  color: rgb(161 161 170);
+  font: 500 10px/1 ui-sans-serif, system-ui, sans-serif;
+}
+.lenota-math-align-menu button {
+  display: grid;
+  width: 25px;
+  height: 24px;
+  place-items: center;
+  border-radius: .35rem;
+  color: rgb(161 161 170);
+}
+.lenota-math-align-menu button:hover { background: rgb(255 255 255 / .07); color: white; }
+.lenota-math-align-menu button.is-active { background: rgb(6 182 212 / .14); color: rgb(207 250 254); }
+@media print {
+  .lenota-math-actions { display: none !important; }
+}
+
+/* 2026 Focus Canvas redesign -------------------------------------------------
+   Semantic surface tokens keep the default workspace and Calm Paper focus
+   mode visually coherent in both light and dark appearances. */
+:root,
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ln-shell: #0f1117;
+  --ln-rail: #111217;
+  --ln-panel: #17191f;
+  --ln-panel-raised: #1c1f27;
+  --ln-toolbar: #181a20;
+  --ln-canvas: #242428;
+  --ln-paper: #202126;
+  --ln-text: #f7f7f8;
+  --ln-muted: #9b9da6;
+  --ln-faint: #666873;
+  --ln-border: rgb(255 255 255 / 8%);
+  --ln-soft: rgb(255 255 255 / 4%);
+  --ln-hover: rgb(255 255 255 / 8%);
+  --ln-shadow: rgb(0 0 0 / 34%);
+  --ln-accent: #8b5cf6;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --ln-shell: #e9e7e2;
+  --ln-rail: #f6f4ef;
+  --ln-panel: #f2f0eb;
+  --ln-panel-raised: #fbfaf7;
+  --ln-toolbar: #fbfaf7;
+  --ln-canvas: #f7f3ea;
+  --ln-paper: #f9f7f1;
+  --ln-text: #25231f;
+  --ln-muted: #67645e;
+  --ln-faint: #96918a;
+  --ln-border: rgb(54 48 42 / 11%);
+  --ln-soft: rgb(54 48 42 / 4%);
+  --ln-hover: rgb(79 70 61 / 8%);
+  --ln-shadow: rgb(69 58 45 / 14%);
+  --ln-accent: #6d55d9;
+}
+
+html,
+body,
+#root,
+.app-shell {
+  background: var(--ln-shell);
+  color: var(--ln-text);
+}
+
+.app-shell,
+.app-rail,
+.navigation-drawer,
+.editor-shell,
+.editor-mode-bar,
+.editor-actions-bar,
+.editor-title-bar,
+.context-inspector {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.app-rail { background: var(--ln-rail) !important; border-color: var(--ln-border) !important; }
+.navigation-drawer { background: var(--ln-panel) !important; border-color: var(--ln-border) !important; }
+.editor-shell { background: var(--ln-shell) !important; color: var(--ln-text); }
+.editor-mode-bar,
+.editor-actions-bar { background: var(--ln-toolbar) !important; border-color: var(--ln-border) !important; }
+.editor-title-bar { background: var(--ln-panel-raised) !important; border-color: var(--ln-border) !important; }
+.context-inspector { background: var(--ln-panel) !important; border-color: var(--ln-border) !important; }
+.context-inspector > div:first-child { background: color-mix(in srgb, var(--ln-panel) 94%, transparent) !important; border-color: var(--ln-border) !important; }
+.inspector-card { border-color: var(--ln-border) !important; background: var(--ln-soft) !important; }
+.legacy-inline-inspector { display: none !important; }
+
+.editor-toolbar-scroll {
+  min-height: 44px;
+  scrollbar-width: none;
+}
+.editor-toolbar-scroll::-webkit-scrollbar { display: none; }
+
+.workspace-mode-tabs {
+  min-height: 44px;
+  background: var(--ln-toolbar) !important;
+  border-color: var(--ln-border) !important;
+}
+
+.editor-stage { background: var(--ln-shell); }
+
+html[data-theme="light"] .app-shell .text-white,
+html[data-theme="light"] .app-shell .text-neutral-50,
+html[data-theme="light"] .app-shell .text-neutral-100 { color: #25231f !important; }
+html[data-theme="light"] .app-shell .text-neutral-200,
+html[data-theme="light"] .app-shell .text-neutral-300 { color: #45423d !important; }
+html[data-theme="light"] .app-shell .text-neutral-400 { color: #67645e !important; }
+html[data-theme="light"] .app-shell .text-neutral-500 { color: #7e7972 !important; }
+html[data-theme="light"] .app-shell .text-neutral-600 { color: #9b958d !important; }
+html[data-theme="light"] .app-shell .text-neutral-700 { color: #aaa39a !important; }
+html[data-theme="light"] .app-shell .text-violet-100,
+html[data-theme="light"] .app-shell .text-violet-200 { color: #4f3aa8 !important; }
+html[data-theme="light"] .app-shell .text-violet-300 { color: #6048bd !important; }
+html[data-theme="light"] .app-shell .text-violet-400 { color: #6d55d9 !important; }
+html[data-theme="light"] .app-shell .text-cyan-100,
+html[data-theme="light"] .app-shell .text-cyan-200,
+html[data-theme="light"] .app-shell .text-cyan-300 { color: #176b78 !important; }
+
+/* Match complete utility tokens. Substring selectors also matched classes such
+   as hover:bg-white/8, which permanently filled every light-mode button. */
+html[data-theme="light"] .app-shell [class~="border-white/6"],
+html[data-theme="light"] .app-shell [class~="border-white/8"],
+html[data-theme="light"] .app-shell [class~="border-white/10"],
+html[data-theme="light"] .app-shell [class~="border-white/12"],
+html[data-theme="light"] .app-shell [class~="border-white/15"] { border-color: var(--ln-border) !important; }
+html[data-theme="light"] .app-shell [class~="bg-white/5"],
+html[data-theme="light"] .app-shell [class~="bg-white/6"],
+html[data-theme="light"] .app-shell [class~="bg-white/7"],
+html[data-theme="light"] .app-shell [class~="bg-white/8"],
+html[data-theme="light"] .app-shell [class~="bg-white/10"],
+html[data-theme="light"] .app-shell [class~="bg-white/[.025]"],
+html[data-theme="light"] .app-shell [class~="bg-white/[0.025]"] { background-color: var(--ln-soft) !important; }
+html[data-theme="light"] .app-shell [class~="bg-black/10"],
+html[data-theme="light"] .app-shell [class~="bg-black/15"],
+html[data-theme="light"] .app-shell [class~="bg-black/20"] { background-color: rgb(69 58 45 / 5%) !important; }
+html[data-theme="light"] .app-shell [class~="bg-black/45"],
+html[data-theme="light"] .app-shell [class~="bg-black/55"],
+html[data-theme="light"] .app-shell [class~="bg-black/60"] { background-color: rgb(46 40 35 / 28%) !important; }
+html[data-theme="light"] .app-shell [class~="hover:bg-white/5"]:hover,
+html[data-theme="light"] .app-shell [class~="hover:bg-white/6"]:hover,
+html[data-theme="light"] .app-shell [class~="hover:bg-white/7"]:hover,
+html[data-theme="light"] .app-shell [class~="hover:bg-white/8"]:hover,
+html[data-theme="light"] .app-shell [class~="hover:bg-white/10"]:hover { background-color: var(--ln-hover) !important; }
+html[data-theme="light"] .app-shell [class~="hover:text-white"]:hover { color: var(--ln-text) !important; }
+html[data-theme="light"] .app-shell [class~="placeholder:text-neutral-600"]::placeholder { color: #9b958d !important; }
+
+html[data-theme="light"] .app-shell .bg-\[\#17171a\],
+html[data-theme="light"] .app-shell .bg-\[\#111217\],
+html[data-theme="light"] .app-shell .bg-\[\#17191f\],
+html[data-theme="light"] .app-shell .bg-\[\#19191d\],
+html[data-theme="light"] .app-shell .bg-\[\#1d1d21\],
+html[data-theme="light"] .app-shell .bg-\[\#202024\],
+html[data-theme="light"] .app-shell .bg-\[\#222226\] { background-color: var(--ln-panel) !important; }
+html[data-theme="light"] .app-shell .bg-\[\#18181b\],
+html[data-theme="light"] .app-shell .bg-\[\#25252a\],
+html[data-theme="light"] .app-shell .bg-\[\#29292e\],
+html[data-theme="light"] .app-shell .bg-\[\#26262b\] { background-color: var(--ln-panel-raised) !important; }
+
+/* Arbitrary dark utilities with alpha suffixes (for example /95 and /98)
+   are different Tailwind tokens and need a semantic light surface too. */
+html[data-theme="light"] .app-shell [class*="bg-[#0"],
+html[data-theme="light"] .app-shell [class*="bg-[#1"],
+html[data-theme="light"] .app-shell [class*="bg-[#2"] { background-color: var(--ln-panel-raised) !important; }
+
+html[data-theme="light"] .app-shell select,
+html[data-theme="light"] .app-shell textarea,
+html[data-theme="light"] .app-shell input:not([type="color"]):not([type="range"]):not(.ui-selectable) {
+  border-color: var(--ln-border) !important;
+  color: #37342f !important;
+}
+html[data-theme="light"] .app-shell select { background-color: var(--ln-panel-raised) !important; }
+html[data-theme="light"] .app-shell option { background: #fbfaf7; color: #25231f; }
+
+html[data-theme="light"] .sidebar-resizer > div:first-child { background: rgb(54 48 42 / 9%) !important; }
+html[data-theme="light"] .sidebar-resizer button {
+  border-color: var(--ln-border) !important;
+  background: #fbfaf7 !important;
+  color: #67645e !important;
+  box-shadow: 0 8px 24px var(--ln-shadow);
+}
+
+html[data-theme="light"] .tiptap,
+html[data-theme="light"] .note-container-editor { color: #2d2a26; }
+html[data-theme="light"] .tiptap h1,
+html[data-theme="light"] .tiptap h2,
+html[data-theme="light"] .tiptap h3 { color: #211f1c; }
+html[data-theme="light"] .tiptap blockquote { color: #6a655e; }
+html[data-theme="light"] .tiptap code { background: rgb(78 68 58 / 7%); color: #5b3db4; }
+html[data-theme="light"] .tiptap pre { background: #efede7; border-color: var(--ln-border); }
+html[data-theme="light"] .tiptap pre code { color: #2d2a26; }
+html[data-theme="light"] .note-container:hover > .note-container-outline { border-color: rgb(54 48 42 / 17%); }
+html[data-theme="light"] .note-container-drag,
+html[data-theme="light"] .note-container-actions {
+  background: rgb(251 250 247 / 96%) !important;
+  border-color: var(--ln-border) !important;
+  box-shadow: 0 8px 22px var(--ln-shadow);
+}
+html[data-theme="light"] .note-attachment-card,
+html[data-theme="light"] .note-audio-card { background: rgb(54 48 42 / 4%); border-color: var(--ln-border); }
+
+html[data-theme="light"] .canvas-floating-ui,
+html[data-theme="light"] .topbar-editor-tools,
+html[data-theme="light"] .canvas-drawing-toolbar,
+html[data-theme="light"] .editor-toolbar-scroll {
+  border-color: var(--ln-border) !important;
+  background: rgb(251 250 247 / 96%) !important;
+  color: var(--ln-muted) !important;
+  box-shadow: 0 10px 28px var(--ln-shadow) !important;
+}
+html[data-theme="light"] .canvas-floating-ui button { color: #67645e !important; }
+html[data-theme="light"] .canvas-floating-ui button:hover { background: var(--ln-hover) !important; color: #25231f !important; }
+html[data-theme="light"] .lenota-math-more {
+  border-color: var(--ln-border);
+  background: rgb(251 250 247 / 97%);
+  color: #45423d;
+  box-shadow: 0 5px 18px var(--ln-shadow);
+}
+html[data-theme="light"] .lenota-math-menu {
+  border-color: var(--ln-border);
+  background: rgb(251 250 247 / 98%);
+  color: #37342f;
+  box-shadow: 0 14px 36px var(--ln-shadow);
+}
+html[data-theme="light"] .lenota-math-menu > button[role="menuitem"] { color: #45423d; }
+html[data-theme="light"] .lenota-math-menu > button[role="menuitem"]:hover:not(:disabled) { background: rgb(109 85 217 / 10%); color: #4f3aa8; }
+html[data-theme="light"] .lenota-math-menu > button[role="menuitem"]:disabled,
+html[data-theme="light"] .lenota-math-align-menu,
+html[data-theme="light"] .lenota-math-align-menu button { color: #96918a; }
+html[data-theme="light"] .lenota-math-menu-divider { background: var(--ln-border); }
+html[data-theme="light"] .lenota-math-align-menu button:hover { background: var(--ln-hover); color: #25231f; }
+html[data-theme="light"] .lenota-math-graph { border-color: rgb(109 85 217 / 18%); background: #fbfaf7; box-shadow: inset 0 1px 0 rgb(54 48 42 / 4%); }
+html[data-theme="light"] .lenota-math-graph-head { border-color: var(--ln-border); color: #37342f; }
+html[data-theme="light"] .lenota-math-graph-equation { color: #45423d; }
+html[data-theme="light"] .lenota-math-graph-svg { background: #fbfaf7; }
+html[data-theme="light"] .lenota-math-graph-grid { stroke: rgb(54 48 42 / 8%); }
+html[data-theme="light"] .lenota-math-graph-axis { stroke: rgb(54 48 42 / 45%); }
+html[data-theme="light"] .lenota-math-graph-unavailable,
+html[data-theme="light"] .lenota-math-graph-range { fill: #7e7972; }
+
+/* Calm Paper focus mode */
+.app-shell.is-focus-mode .app-rail,
+.app-shell.is-focus-mode .navigation-drawer,
+.app-shell.is-focus-mode .sidebar-resizer { display: none !important; }
+
+.editor-shell.is-focus-mode {
+  --focus-gutter: clamp(24px, 7vw, 120px);
+  background: var(--ln-shell) !important;
+}
+
+.editor-shell.is-focus-mode .editor-mode-bar {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  z-index: 1000002;
+  width: min(760px, calc(100% - 220px));
+  min-height: 48px;
+  transform: translateX(-50%);
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 94%, transparent) !important;
+  box-shadow: 0 14px 40px var(--ln-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.editor-shell.is-focus-mode .workspace-mode-tabs {
+  border-radius: 15px 0 0 15px;
+  background: transparent !important;
+}
+
+.editor-shell.is-focus-mode .editor-toolbar-scroll {
+  min-height: 46px;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.editor-shell.is-focus-mode .editor-actions-bar { display: none !important; }
+
+.editor-shell.is-focus-mode .editor-title-bar {
+  min-height: 168px;
+  padding: 82px var(--focus-gutter) 18px;
+  border: 0 !important;
+  background: var(--ln-shell) !important;
+}
+
+.editor-shell.is-focus-mode .editor-title-bar > div:first-child { max-width: 1160px; }
+
+.editor-shell.is-focus-mode .editor-title-bar > .no-print {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  z-index: 1000003;
+  background: color-mix(in srgb, var(--ln-panel-raised) 88%, transparent) !important;
+  box-shadow: 0 10px 28px var(--ln-shadow);
+}
+
+.editor-shell.is-focus-mode .editor-title-bar input {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 3.5vw, 3.25rem);
+  letter-spacing: -.025em;
+}
+
+.editor-shell.is-focus-mode .editor-stage {
+  min-height: 0;
+  padding: 0 var(--focus-gutter) clamp(24px, 5vh, 56px);
+  background: var(--ln-shell);
+}
+
+.editor-shell.is-focus-mode .note-canvas {
+  overflow: hidden;
+  border: 1px solid var(--ln-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px var(--ln-shadow);
+}
+
+html[data-theme="light"] .editor-shell.is-focus-mode { --ln-shell: #f4f1ea; }
+html[data-theme="dark"] .editor-shell.is-focus-mode { --ln-shell: #111318; }
+
+@media (max-width: 980px) {
+  .context-inspector { width: 248px !important; }
+  .editor-shell.is-focus-mode { --focus-gutter: 20px; }
+  .editor-shell.is-focus-mode .editor-mode-bar { width: calc(100% - 130px); }
+}
+
+/* Faithful right-inspector workspace ---------------------------------------- */
+.editor-shell:not(.is-focus-mode) { padding-top: 70px; }
+
+.editor-shell:not(.is-focus-mode) .editor-mode-bar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000005;
+  height: 70px;
+  overflow: visible;
+  background: color-mix(in srgb, var(--ln-toolbar) 97%, transparent) !important;
+  box-shadow: 0 1px 0 var(--ln-border), 0 12px 34px rgb(0 0 0 / 8%);
+  backdrop-filter: blur(18px);
+}
+
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  min-height: 50px;
+  transform: translateX(-50%);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 10px;
+  padding: 0;
+  background: var(--ln-panel-raised) !important;
+  box-shadow: 0 8px 24px var(--ln-shadow);
+}
+
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  height: 48px;
+  min-width: 104px;
+  justify-content: center;
+  border-radius: 0;
+  border-right: 1px solid var(--ln-border);
+  padding-inline: 16px;
+  font-size: 13px;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:last-child { border-right: 0; }
+
+.topbar-editor-tools {
+  width: min(980px, calc(100vw - 80px));
+  opacity: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--ln-panel-raised) 97%, transparent);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.topbar-editor-tools.is-open { opacity: 1; pointer-events: auto; }
+.topbar-editor-tools .editor-toolbar-scroll,
+.topbar-editor-tools .canvas-drawing-toolbar { border: 0 !important; background: transparent !important; }
+
+.editor-shell:not(.is-focus-mode) .editor-actions-bar { display: none !important; }
+.editor-shell:not(.is-focus-mode) .editor-title-bar { background: var(--ln-shell) !important; }
+.editor-shell:not(.is-focus-mode) .canvas-zoom-controls { display: none !important; }
+
+.editor-status-bar {
+  height: 48px;
+  background: var(--ln-toolbar) !important;
+  border-color: var(--ln-border) !important;
+}
+
+.app-shell:not(.is-focus-mode) .app-rail,
+.app-shell:not(.is-focus-mode) .navigation-drawer,
+.app-shell:not(.is-focus-mode) .sidebar-resizer {
+  padding-top: 70px;
+  padding-bottom: 48px;
+}
+
+.app-shell:not(.is-focus-mode) .app-rail > div:first-child { display: none; }
+.app-shell:not(.is-focus-mode) .app-rail > nav { margin-top: 0; }
+.app-shell:not(.is-focus-mode) .navigation-drawer {
+  background: linear-gradient(180deg, var(--ln-panel), color-mix(in srgb, var(--ln-panel) 96%, #000)) !important;
+}
+
+.context-inspector {
+  width: 312px !important;
+  background: linear-gradient(180deg, var(--ln-panel), color-mix(in srgb, var(--ln-panel) 96%, #000)) !important;
+}
+
+.context-inspector .inspector-card {
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 42%, transparent) !important;
+}
+
+.editor-shell:not(.is-focus-mode) .note-canvas {
+  box-shadow: inset 0 1px 0 var(--ln-border);
+}
+
+/* Focus mode is a one-column layout. Never assign the editor to a hidden
+   fourth grid column: this is the regression that produced a blank window. */
+.app-shell.is-focus-mode > main.editor-shell {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1;
+  grid-column: 1 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  min-width: 320px;
+  min-height: 320px;
+}
+.editor-shell.is-focus-mode { padding-top: 0; }
+.editor-shell.is-focus-mode .app-topbar-brand,
+.editor-shell.is-focus-mode .app-topbar-history { display: none !important; }
+.editor-shell.is-focus-mode .editor-mode-bar {
+  position: absolute;
+  display: flex;
+  overflow: visible;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs {
+  position: static;
+  transform: none;
+  margin: 0;
+}
+.editor-shell.is-focus-mode .topbar-editor-tools { top: 58px; }
+.editor-shell.is-focus-mode .app-topbar-actions {
+  position: fixed;
+  top: auto;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000006;
+  padding: 5px;
+  border: 1px solid var(--ln-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 92%, transparent);
+  box-shadow: 0 12px 32px var(--ln-shadow);
+  backdrop-filter: blur(16px);
+}
+.editor-shell.is-focus-mode .app-topbar-actions > * { display: none; }
+.editor-shell.is-focus-mode .app-topbar-actions > button:nth-of-type(3),
+.editor-shell.is-focus-mode .app-topbar-actions > button:nth-of-type(4),
+.editor-shell.is-focus-mode .app-topbar-actions > button:last-child { display: grid; }
+.editor-shell.is-focus-mode .editor-status-bar { display: none !important; }
+.editor-shell.is-focus-mode .canvas-zoom-controls { display: flex; }
+.editor-shell.is-focus-mode .editor-title-bar > .no-print { display: none !important; }
+.focus-calm-brand,
+.focus-calm-status { color: var(--ln-text); }
+.lenota-build-badge {
+  flex: 0 0 auto;
+  border: 1px solid var(--ln-border);
+  border-radius: 999px;
+  padding: 2px 6px;
+  color: var(--ln-faint);
+  font: 600 9px/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .04em;
+}
+.focus-calm-breadcrumb { padding-left: 20px; border-left: 1px solid var(--ln-border); }
+html[data-theme="light"] .focus-calm-brand > div:first-child { border-color: rgb(54 48 42 / 10%) !important; }
+
+@media (max-width: 1120px) {
+  .focus-calm-breadcrumb { display: none; }
+  .focus-calm-brand > span:nth-child(2) { display: none; }
+}
+
+@media (max-width: 1280px) {
+  .app-topbar-brand { width: 150px !important; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button { min-width: 82px; padding-inline: 11px; }
+  .app-topbar-actions > span { display: none; }
+}
+
+@media (max-width: 1050px) {
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs { left: 45%; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button { min-width: 48px; font-size: 0; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button svg { width: 17px; height: 17px; }
+}
+
+.navigation-drawer .navigator-heading { border-bottom: 0 !important; }
+.navigation-drawer .navigator-heading { background: color-mix(in srgb, var(--ln-panel-raised) 28%, transparent); }
+.navigation-drawer .navigator-notebook-select { background: color-mix(in srgb, var(--ln-panel-raised) 55%, transparent) !important; }
+.navigation-drawer .navigator-tree {
+  max-height: 43%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ln-border) transparent;
+}
+.navigation-drawer .navigator-tree .navigator-notebook-select { background: transparent !important; }
+.navigation-drawer .navigator-tree-actions {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.navigation-drawer .group\/tree:hover > .navigator-tree-actions,
+.navigation-drawer .group\/tree:focus-within > .navigator-tree-actions { opacity: 1; }
+.navigation-drawer .navigator-tree-actions > button,
+.navigation-drawer .navigator-tree-actions > label {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--ln-faint);
+}
+.navigation-drawer .navigator-tree-actions > button:hover,
+.navigation-drawer .navigator-tree-actions > label:hover { background: var(--ln-hover); color: var(--ln-text); }
+.navigation-drawer .navigator-tree-actions button:disabled { opacity: .35; }
+.navigation-drawer .navigator-tree-actions input[type="color"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.navigation-drawer .navigator-mode-tabs > button {
+  display: grid;
+  height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--ln-faint);
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+.navigation-drawer .navigator-mode-tabs > button:hover {
+  border-color: var(--ln-border);
+  background: var(--ln-hover);
+  color: var(--ln-text);
+}
+.navigation-drawer .navigator-mode-tabs > button.is-active {
+  border-color: color-mix(in srgb, var(--ln-accent) 32%, transparent);
+  background: color-mix(in srgb, var(--ln-accent) 16%, transparent);
+  color: color-mix(in srgb, var(--ln-accent) 55%, white);
+}
+.navigation-drawer .navigator-search { background: color-mix(in srgb, var(--ln-panel-raised) 45%, transparent) !important; }
+.navigation-drawer .navigator-groups {
+  margin-top: 10px;
+  border-block: 1px solid var(--ln-border) !important;
+  background: transparent !important;
+}
+.navigation-drawer .navigator-sections { height: 48px; }
+.navigation-drawer .navigator-section-actions,
+.navigation-drawer .navigator-page-actions { display: none !important; }
+.navigation-drawer .navigator-page-preview,
+.navigation-drawer .navigator-page-tags { display: none !important; }
+.navigation-drawer .group\/page { min-height: 38px; padding-top: 8px; padding-bottom: 8px; }
+.navigation-drawer .navigator-footer { background: color-mix(in srgb, var(--ln-panel) 96%, transparent); }
+
+/* v0.26 workspace fidelity and canvas performance ------------------------- */
+.canvas-world {
+  /* Do not promote the full 8000x8000 workspace to a single WebKit layer.
+     The viewport owns the repeating paper pattern; this world only moves the
+     actual notes and vectors. */
+  contain: layout style;
+  transform-origin: 0 0;
+}
+
+.note-canvas {
+  contain: layout paint;
+  isolation: isolate;
+}
+
+.editor-shell:not(.is-focus-mode) {
+  padding-top: 72px;
+}
+
+.editor-shell:not(.is-focus-mode) .editor-mode-bar {
+  height: 72px;
+  border-bottom: 1px solid var(--ln-border) !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 2%), 0 10px 32px rgb(0 0 0 / 10%);
+}
+
+/* The selected right-panel reference has no second title strip. Keeping that
+   strip consumed nearly ten percent of the usable canvas height. The title is
+   editable in the top bar instead. */
+.editor-shell:not(.is-focus-mode) .editor-title-bar {
+  display: none !important;
+}
+
+.normal-page-context {
+  width: clamp(120px, 14vw, 230px);
+  margin-left: 10px;
+  line-height: 1.15;
+}
+.normal-page-breadcrumb {
+  margin-bottom: 3px;
+  color: var(--ln-faint);
+  font-size: 10px;
+  letter-spacing: .01em;
+}
+.normal-page-title {
+  width: 100%;
+  color: var(--ln-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+.editor-shell.is-focus-mode .normal-page-context { display: none; }
+
+.editor-shell:not(.is-focus-mode) .editor-stage {
+  border: 0;
+  background: var(--ln-canvas);
+}
+.editor-shell:not(.is-focus-mode) .note-canvas {
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 1px 0 var(--ln-border), inset 0 -1px 0 var(--ln-border);
+}
+
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  top: 11px;
+  min-height: 50px;
+  border-radius: 11px;
+  box-shadow: 0 10px 30px var(--ln-shadow);
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  height: 48px;
+  min-width: 112px;
+  gap: 9px;
+  font-size: 14px;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: color-mix(in srgb, var(--ln-accent) 22%, transparent) !important;
+}
+
+.topbar-editor-tools {
+  border-radius: 13px !important;
+  box-shadow: 0 18px 50px rgb(0 0 0 / 30%) !important;
+}
+
+.editor-status-bar {
+  height: 52px !important;
+  padding-inline: 16px !important;
+}
+
+.navigation-drawer {
+  box-shadow: inset -1px 0 0 var(--ln-border);
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer,
+.app-shell:not(.is-focus-mode) .sidebar-resizer {
+  padding-top: 72px;
+  padding-bottom: 52px;
+}
+.navigation-drawer .navigator-mode-tabs {
+  padding: 12px 14px 10px;
+  border-bottom: 0 !important;
+}
+.navigation-drawer .navigator-search {
+  margin-top: 4px;
+  height: 42px;
+  border-radius: 10px;
+}
+.navigation-drawer .navigator-tree {
+  max-height: 56%;
+  margin-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 0 !important;
+}
+.navigation-drawer .group\/page {
+  min-height: 40px;
+  border-radius: 8px;
+}
+.navigation-drawer .navigator-footer {
+  padding: 12px;
+  border-color: var(--ln-border) !important;
+}
+
+.context-inspector {
+  width: 320px !important;
+  box-shadow: inset 1px 0 0 var(--ln-border);
+}
+.context-inspector > div:first-child {
+  height: 62px !important;
+  padding-inline: 18px !important;
+}
+.context-inspector .inspector-card {
+  padding: 14px !important;
+  border-radius: 11px !important;
+}
+
+.editor-shell.is-focus-mode .editor-title-bar {
+  min-height: 150px;
+  padding-top: 76px;
+  padding-bottom: 14px;
+}
+.editor-shell.is-focus-mode .editor-stage {
+  padding-bottom: clamp(18px, 3vh, 34px);
+}
+.editor-shell.is-focus-mode .note-canvas {
+  border-radius: 20px;
+}
+.editor-shell.is-focus-mode .canvas-zoom-controls {
+  left: 14px;
+  bottom: 14px;
+  border-radius: 12px;
+  padding: 5px;
+}
+
+html[data-theme="dark"] .editor-shell:not(.is-focus-mode) .note-canvas {
+  background-color: #151823 !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .note-canvas {
+  background-color: #fbfaf7 !important;
+}
+
+@media (max-width: 1500px) {
+  .normal-page-context { display: none; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button { min-width: 92px; }
+}
+
+/* WebKitGTK repaints content behind backdrop filters while the canvas moves.
+   These surfaces are already 92-97% opaque, so the visual difference is tiny
+   and removing blur avoids a large per-frame repaint. */
+.editor-shell .editor-mode-bar,
+.editor-shell .topbar-editor-tools,
+.editor-shell.is-focus-mode .app-topbar-actions,
+.context-inspector > div:first-child {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* v0.27 Design Lab visual system ------------------------------------------
+   This layer is intentionally presentation-only. It keeps the v0.26.1
+   WebKit canvas path unchanged while matching the approved inspector and calm
+   paper references more closely. */
+:root,
+html[data-theme="dark"] {
+  --ln-shell: #0c1018;
+  --ln-rail: #0f141d;
+  --ln-panel: #121722;
+  --ln-panel-raised: #171d28;
+  --ln-toolbar: #10151e;
+  --ln-canvas: #171b26;
+  --ln-paper: #171b26;
+  --ln-text: #f4f4f5;
+  --ln-muted: #a1a1aa;
+  --ln-faint: #686b76;
+  --ln-border: rgb(168 180 208 / 14%);
+  --ln-soft: rgb(168 180 208 / 6%);
+  --ln-hover: rgb(168 180 208 / 9%);
+  --ln-shadow: rgb(0 0 0 / 34%);
+  --ln-accent: #9b66f6;
+}
+
+html[data-theme="light"] {
+  --ln-shell: #f5f2ec;
+  --ln-rail: #f9f7f2;
+  --ln-panel: #f9f7f2;
+  --ln-panel-raised: #fffefa;
+  --ln-toolbar: #fdfcf9;
+  --ln-canvas: #fbf8f1;
+  --ln-paper: #fbf8f1;
+  --ln-text: #25231f;
+  --ln-muted: #6f6a63;
+  --ln-faint: #9b958d;
+  --ln-border: rgb(67 59 49 / 14%);
+  --ln-soft: rgb(67 59 49 / 5%);
+  --ln-hover: rgb(67 59 49 / 8%);
+  --ln-shadow: rgb(74 62 46 / 13%);
+  --ln-accent: #7654dc;
+}
+
+/* Main right-inspector workspace */
+.editor-shell:not(.is-focus-mode) .editor-mode-bar {
+  height: 70px;
+  background: var(--ln-toolbar) !important;
+  box-shadow: 0 1px 0 var(--ln-border), 0 9px 28px rgb(0 0 0 / 9%);
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand {
+  width: 205px !important;
+  gap: 12px;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand > div:first-child {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #8b5cf6, #6d28d9) !important;
+  box-shadow: 0 8px 22px rgb(109 40 217 / 30%);
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-history { gap: 2px; }
+.editor-shell:not(.is-focus-mode) .app-topbar-history button,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions button {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-history button:active,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions button:active { transform: scale(.94); }
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  top: 10px;
+  min-height: 50px;
+  border-radius: 11px;
+  background: var(--ln-panel-raised) !important;
+  box-shadow: 0 10px 28px var(--ln-shadow);
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  min-width: 108px;
+  gap: 9px;
+  color: var(--ln-muted);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ln-accent) 18%, transparent), color-mix(in srgb, var(--ln-accent) 10%, transparent)) !important;
+  color: var(--ln-accent) !important;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:hover { background: var(--ln-hover); color: var(--ln-text); }
+.topbar-editor-tools {
+  border: 1px solid var(--ln-border) !important;
+  background: var(--ln-panel-raised) !important;
+  box-shadow: 0 18px 48px var(--ln-shadow) !important;
+}
+
+.navigation-drawer {
+  background: linear-gradient(145deg, var(--ln-panel), color-mix(in srgb, var(--ln-panel) 92%, #000)) !important;
+}
+.navigation-drawer .navigator-mode-tabs {
+  height: 58px;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--ln-border) !important;
+}
+.navigation-drawer .navigator-mode-tabs > button {
+  height: 38px;
+  border-radius: 8px;
+}
+.navigation-drawer .navigator-search {
+  height: 42px;
+  margin: 12px !important;
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 45%, transparent) !important;
+}
+.navigation-drawer .navigator-tree {
+  max-height: 54%;
+  margin-top: 0;
+  padding: 4px 10px 12px;
+}
+.navigation-drawer .navigator-tree-row,
+.navigation-drawer .group\/tree,
+.navigation-drawer .group\/page {
+  min-height: 38px;
+  border-radius: 8px;
+}
+.navigation-drawer .group\/page[class*="bg-violet"],
+.navigation-drawer .group\/tree [class*="bg-violet"] {
+  background: color-mix(in srgb, var(--ln-accent) 15%, transparent) !important;
+}
+.navigation-drawer .navigator-footer {
+  margin: auto 12px 12px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.navigation-drawer .navigator-footer > button {
+  height: 44px;
+  border: 1px solid var(--ln-border);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 42%, transparent);
+}
+
+.context-inspector {
+  width: 312px !important;
+  background: linear-gradient(145deg, var(--ln-panel), color-mix(in srgb, var(--ln-panel) 94%, #000)) !important;
+  box-shadow: inset 1px 0 0 var(--ln-border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--ln-border) transparent;
+}
+.context-inspector > div:first-child {
+  height: 62px !important;
+  padding: 0 14px 0 18px !important;
+  background: var(--ln-panel) !important;
+}
+.context-inspector > div:nth-child(2) { padding: 12px !important; }
+.context-inspector .inspector-card {
+  padding: 13px !important;
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 10px !important;
+  background: color-mix(in srgb, var(--ln-panel-raised) 46%, transparent) !important;
+  box-shadow: none !important;
+}
+.context-inspector select,
+.context-inspector textarea,
+.context-inspector [class*="bg-black"] {
+  border-color: var(--ln-border) !important;
+  background-color: var(--ln-panel-raised) !important;
+}
+.context-inspector button { transition: background-color 120ms ease, color 120ms ease, transform 120ms ease; }
+.context-inspector button:active { transform: scale(.98); }
+.context-inspector button[class*="bg-violet-600"] {
+  background: linear-gradient(100deg, #7841d9, #8b3ee8) !important;
+  box-shadow: 0 8px 18px rgb(109 40 217 / 22%);
+}
+.inspector-equation-preview {
+  display: grid;
+  min-height: 76px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--ln-border);
+  border-radius: 9px;
+  background: var(--ln-panel-raised);
+  font-size: 20px;
+}
+.inspector-equation-preview .katex-display { margin: 0; }
+
+.editor-status-bar {
+  height: 50px !important;
+  padding-inline: 14px !important;
+  background: var(--ln-toolbar) !important;
+}
+html[data-theme="dark"] .editor-shell:not(.is-focus-mode) .note-canvas { background-color: #171b26 !important; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .note-canvas { background-color: #fbf8f1 !important; }
+
+/* Calm paper focus mode */
+.editor-shell.is-focus-mode { --focus-gutter: clamp(32px, 6vw, 100px); }
+.editor-shell.is-focus-mode .editor-mode-bar {
+  top: 13px;
+  right: 0;
+  left: 0;
+  width: max-content;
+  max-width: calc(100vw - 520px);
+  margin-inline: auto;
+  min-height: 50px;
+  transform: none;
+  border-radius: 17px;
+  background: var(--ln-panel-raised) !important;
+  box-shadow: 0 10px 28px var(--ln-shadow);
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs {
+  min-height: 48px;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs > button {
+  min-width: 94px;
+  height: 48px;
+  justify-content: center;
+  gap: 8px;
+  border-right: 1px solid var(--ln-border);
+  border-radius: 0;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs > button:last-child { border-right: 0; }
+.focus-calm-brand { left: 20px !important; top: 18px !important; }
+.focus-calm-brand > div:first-child {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 11px;
+  background: var(--ln-panel-raised) !important;
+  color: var(--ln-accent) !important;
+  box-shadow: 0 7px 22px var(--ln-shadow);
+}
+.focus-calm-status { top: 28px !important; right: 28px !important; }
+.editor-shell.is-focus-mode .editor-title-bar {
+  min-height: 172px;
+  padding: 80px var(--focus-gutter) 16px calc(var(--focus-gutter) + 100px);
+}
+.editor-shell.is-focus-mode .editor-title-bar input {
+  font-size: clamp(2.35rem, 3.35vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -.03em;
+}
+.editor-shell.is-focus-mode .editor-stage {
+  gap: 18px;
+  padding: 0 var(--focus-gutter) 30px;
+}
+.focus-page-strip {
+  display: flex;
+  width: 82px;
+  flex: 0 0 82px;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  min-height: 0;
+  padding: 15px 9px;
+  overflow-y: auto;
+  border: 1px solid var(--ln-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 78%, transparent);
+  box-shadow: 0 12px 30px var(--ln-shadow);
+  scrollbar-width: none;
+}
+.focus-page-thumb {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ln-muted);
+  cursor: pointer;
+}
+.focus-page-thumb small { font-size: 10px; }
+.focus-page-mini {
+  display: flex;
+  width: 58px;
+  height: 68px;
+  flex-direction: column;
+  gap: 7px;
+  padding: 11px 8px;
+  border: 1px solid var(--ln-border);
+  border-radius: 5px;
+  background: var(--ln-paper);
+}
+.focus-page-mini i { display: block; width: 100%; height: 1px; background: var(--ln-border); }
+.focus-page-mini i:nth-child(2) { width: 72%; }
+.focus-page-mini i:nth-child(4) { width: 82%; }
+.focus-page-thumb.is-active .focus-page-mini {
+  border-color: var(--ln-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ln-accent) 18%, transparent);
+}
+.focus-page-strip-more { flex: 0 0 auto; margin-top: 1px; color: var(--ln-muted); }
+.editor-shell.is-focus-mode .note-canvas {
+  border-radius: 20px;
+  box-shadow: 0 22px 60px var(--ln-shadow);
+}
+.editor-shell.is-focus-mode .app-topbar-actions {
+  right: 20px;
+  bottom: 20px;
+  border-radius: 14px;
+  background: var(--ln-panel-raised);
+}
+.editor-shell.is-focus-mode .canvas-zoom-controls {
+  left: 14px;
+  bottom: 14px;
+  border-color: var(--ln-border) !important;
+  border-radius: 13px;
+  background: var(--ln-panel-raised) !important;
+  box-shadow: 0 9px 25px var(--ln-shadow);
+}
+
+@media (max-width: 1450px) {
+  .editor-shell:not(.is-focus-mode) .app-topbar-brand { width: 168px !important; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button { min-width: 88px; }
+  .editor-shell.is-focus-mode .editor-mode-bar { max-width: calc(100vw - 360px); }
+  .focus-calm-breadcrumb { display: none; }
+}
+
+@media (max-width: 1120px) {
+  .editor-shell.is-focus-mode { --focus-gutter: 24px; }
+  .editor-shell.is-focus-mode .workspace-mode-tabs > button { min-width: 76px; }
+  .editor-shell.is-focus-mode .editor-title-bar { padding-left: calc(var(--focus-gutter) + 86px); }
+  .focus-page-strip { width: 70px; flex-basis: 70px; padding-inline: 6px; }
+  .focus-page-mini { width: 54px; }
+}
+
+@media (max-height: 760px) {
+  .focus-page-strip { display: none; }
+  .editor-shell.is-focus-mode .editor-title-bar { min-height: 142px; padding-top: 72px; }
+  .context-inspector .inspector-equation-preview { min-height: 60px; }
+}
+
+/* v0.28 Reference workspace -------------------------------------------------
+   The selected reference is a rail + notebook drawer + page composition.
+   These rules change the normal workspace hierarchy while leaving the fast
+   WebKit canvas transform and Calm Focus mode untouched. */
+html[data-theme="dark"] {
+  --ln-shell: #0a0f17;
+  --ln-rail: #0b1018;
+  --ln-panel: #101722;
+  --ln-panel-raised: #141c28;
+  --ln-toolbar: #111822;
+  --ln-canvas: #0d1420;
+  --ln-paper: #101824;
+  --ln-text: #f5f5f7;
+  --ln-muted: #a6a9b2;
+  --ln-faint: #727783;
+  --ln-border: rgb(148 163 184 / 18%);
+  --ln-soft: rgb(148 163 184 / 6%);
+  --ln-hover: rgb(148 163 184 / 10%);
+  --ln-shadow: rgb(0 0 0 / 40%);
+  --ln-accent: #a66cf2;
+}
+
+/* 74px activity rail */
+.app-shell:not(.is-focus-mode) .app-rail {
+  display: flex !important;
+  width: 74px;
+  padding: 0 !important;
+  border-color: var(--ln-border) !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--ln-rail) 96%, #06090f), var(--ln-rail)) !important;
+}
+.app-shell:not(.is-focus-mode) .app-rail > .rail-logo {
+  display: grid !important;
+  width: 74px;
+  height: 78px;
+}
+.rail-logo-mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px 8px 8px 3px;
+  background: linear-gradient(145deg, #b27cff, #6e38e8);
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 8px 22px rgb(105 53 226 / 28%);
+}
+.rail-shortcuts {
+  gap: 8px;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+  border: 0 !important;
+}
+.app-rail .rail-icon {
+  display: grid;
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #c6c8cf;
+}
+.app-rail .rail-icon:hover { background: var(--ln-hover) !important; color: var(--ln-text); }
+.app-rail .rail-icon.is-active {
+  position: relative;
+  background: linear-gradient(90deg, rgb(139 92 246 / 22%), rgb(139 92 246 / 12%));
+  color: #b979ff;
+}
+.app-rail .rail-icon.is-active::before {
+  content: "";
+  position: absolute;
+  left: -11px;
+  width: 5px;
+  height: 34px;
+  border-radius: 0 5px 5px 0;
+  background: #9d68ed;
+}
+.rail-bottom { gap: 12px; padding: 0 0 18px; }
+.rail-avatar {
+  display: grid;
+  width: 47px;
+  height: 47px;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #9f67ed, #6c3bd0);
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Notebook drawer and its rounded library card */
+.app-shell:not(.is-focus-mode) .navigation-drawer {
+  position: relative;
+  padding: 82px 12px 10px 16px !important;
+  border-color: var(--ln-border) !important;
+  background: linear-gradient(150deg, var(--ln-shell), color-mix(in srgb, var(--ln-shell) 88%, #151b27)) !important;
+  box-shadow: none;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer::before {
+  content: "";
+  position: absolute;
+  inset: 82px 12px 10px 16px;
+  border: 1px solid var(--ln-border);
+  border-radius: 18px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ln-panel) 97%, #182131), color-mix(in srgb, var(--ln-panel) 92%, #080c13));
+  box-shadow: 0 18px 42px rgb(0 0 0 / 18%);
+  pointer-events: none;
+}
+.navigation-drawer > * { position: relative; z-index: 1; }
+.navigator-brand {
+  position: absolute !important;
+  top: 0;
+  left: 24px;
+  display: flex;
+  height: 82px;
+  align-items: center;
+  color: var(--ln-text);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.035em;
+}
+.navigation-drawer .navigator-mode-tabs,
+.navigation-drawer .navigator-search { display: none !important; }
+.navigation-drawer .navigator-tree {
+  max-height: 67%;
+  margin: 0 !important;
+  padding: 10px 10px 4px !important;
+  overflow-y: auto;
+  border: 0 !important;
+}
+.navigation-drawer .navigator-tree-row {
+  min-height: 58px;
+  padding-inline: 10px;
+  border-radius: 11px;
+}
+.navigation-drawer .navigator-tree-row > svg { display: none; }
+.navigation-drawer .navigator-tree-actions {
+  position: absolute;
+  right: 6px;
+  z-index: 3;
+  background: color-mix(in srgb, var(--ln-panel) 94%, transparent);
+}
+.navigation-drawer .navigator-tree-row .navigator-tree-actions > * { display: none; }
+.navigation-drawer .navigator-tree-row .navigator-tree-actions > button:first-child { display: grid; }
+.navigation-drawer .navigator-notebook-select {
+  color: var(--ln-text) !important;
+  font-size: 17px;
+  font-weight: 600;
+}
+.navigator-quick-links {
+  display: grid;
+  gap: 3px;
+  padding: 3px 2px 9px;
+}
+.navigator-quick-links > button {
+  display: flex;
+  height: 43px;
+  align-items: center;
+  gap: 13px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ln-muted);
+  font-size: 15px;
+  text-align: left;
+}
+.navigator-quick-links > button:hover { background: var(--ln-hover); color: var(--ln-text); }
+.navigation-drawer .navigator-sections-root,
+.navigation-drawer .navigator-new-group,
+.navigation-drawer .navigator-new-section-row,
+.navigation-drawer .navigator-section-actions,
+.navigation-drawer .navigator-page-actions,
+.navigation-drawer .navigator-footer { display: none !important; }
+.navigation-drawer .group\/tree,
+.navigation-drawer .group\/page { min-height: 41px; border-radius: 8px; }
+.navigation-drawer .group\/tree button { font-size: 15px; }
+.navigation-drawer .group\/tree [class*="bg-violet"] {
+  background: linear-gradient(90deg, rgb(130 86 203 / 24%), rgb(113 71 177 / 18%)) !important;
+  color: #f3eaff !important;
+}
+.navigation-drawer .navigator-group-row-button[class*="bg-violet"] {
+  background: transparent !important;
+  color: var(--ln-text) !important;
+}
+.navigation-drawer > .min-h-0.flex-1 {
+  margin: 0 6px 0 30px;
+  padding: 2px 5px 16px !important;
+}
+.navigation-drawer .group\/page {
+  min-height: 42px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+.navigation-drawer .group\/page[class*="bg-violet"] {
+  border-color: transparent !important;
+  background: linear-gradient(90deg, rgb(130 86 203 / 28%), rgb(99 67 160 / 20%)) !important;
+}
+.navigation-drawer .navigator-page-preview,
+.navigation-drawer .navigator-page-tags { display: none !important; }
+.app-shell:not(.is-focus-mode) .sidebar-resizer {
+  padding: 0 !important;
+  background: var(--ln-shell);
+}
+.app-shell:not(.is-focus-mode) .sidebar-resizer > div:first-child { background: var(--ln-border) !important; }
+.app-shell:not(.is-focus-mode) .sidebar-resizer button { opacity: 0; }
+.app-shell:not(.is-focus-mode) .sidebar-resizer:hover button,
+.app-shell:not(.is-focus-mode) .sidebar-resizer button:focus-visible { opacity: 1; }
+
+/* Reference page composition: header, floating Write/Draw/AI pill, canvas. */
+.editor-shell:not(.is-focus-mode) {
+  padding: 0 !important;
+  background: radial-gradient(circle at 56% 8%, color-mix(in srgb, var(--ln-accent) 4%, transparent), transparent 34%), var(--ln-shell) !important;
+}
+.editor-shell:not(.is-focus-mode) .editor-mode-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 30;
+  display: block;
+  width: 100%;
+  height: 0 !important;
+  min-height: 0;
+  overflow: visible;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand,
+.editor-shell:not(.is-focus-mode) .app-topbar-history,
+.editor-shell:not(.is-focus-mode) .normal-page-context { display: none !important; }
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  position: absolute;
+  top: 218px;
+  left: 50%;
+  display: flex;
+  width: 435px;
+  min-height: 58px;
+  margin: 0;
+  padding: 5px !important;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 93%, transparent) !important;
+  box-shadow: 0 15px 38px rgb(0 0 0 / 28%);
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  display: flex;
+  height: 48px;
+  min-width: 0;
+  flex: 1 1 0;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--ln-text);
+  font-size: 16px;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:nth-child(3),
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:nth-child(4) { display: none; }
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: linear-gradient(100deg, rgb(123 68 196 / 42%), rgb(88 55 150 / 34%)) !important;
+  color: #d9a7ff !important;
+  box-shadow: inset 0 0 0 1px rgb(177 111 255 / 55%), 0 8px 18px rgb(67 29 123 / 20%);
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:nth-child(5) { color: #6ed7e8; }
+.editor-shell:not(.is-focus-mode) .app-topbar-actions {
+  position: absolute;
+  top: 37px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0;
+  color: var(--ln-muted);
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > button { display: none; }
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-favorite-action,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > button:last-child {
+  display: grid !important;
+  width: 36px;
+  height: 36px;
+  color: var(--ln-text);
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > span svg { color: #99d749; }
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > span { color: var(--ln-muted); font-size: 14px; }
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1000050;
+  display: grid !important;
+  width: 50px;
+  height: 50px;
+  border: 1px solid var(--ln-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 96%, transparent);
+  color: var(--ln-text);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 30%);
+}
+.editor-shell:not(.is-focus-mode) .editor-title-bar {
+  display: flex !important;
+  height: 247px;
+  min-height: 247px;
+  flex: 0 0 247px;
+  align-items: flex-start;
+  padding: 35px 42px 36px;
+  border: 0 !important;
+  background: transparent !important;
+}
+.normal-page-header-breadcrumb {
+  margin-bottom: 24px;
+  color: var(--ln-muted);
+  font-size: 15px;
+  font-weight: 400;
+}
+.normal-page-header-breadcrumb::first-letter { color: var(--ln-muted); }
+.editor-shell:not(.is-focus-mode) .editor-title-bar input {
+  height: 58px;
+  color: var(--ln-text);
+  font-size: clamp(2.25rem, 3.1vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -.035em;
+}
+.editor-shell:not(.is-focus-mode) .editor-title-bar > button { display: none; }
+.editor-shell:not(.is-focus-mode) .editor-title-bar > div > div:last-child {
+  min-height: 28px;
+  margin-top: 10px;
+  gap: 8px;
+}
+.editor-shell:not(.is-focus-mode) .editor-title-bar > div > div:last-child button {
+  height: 29px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, var(--ln-accent) 70%, transparent);
+  border-radius: 6px;
+  background: rgb(126 73 190 / 13%);
+  color: #d19cff;
+  font-size: 13px;
+}
+.editor-shell:not(.is-focus-mode) .editor-stage {
+  gap: 0;
+  padding: 0 26px 2px;
+  border: 0;
+  background: transparent;
+}
+.editor-shell:not(.is-focus-mode) .note-canvas {
+  border: 1px solid var(--ln-border) !important;
+  border-radius: 18px;
+  background-color: var(--ln-canvas) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2%), 0 18px 48px rgb(0 0 0 / 16%);
+}
+.editor-shell:not(.is-focus-mode) .note-container {
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 45%, transparent);
+  box-shadow: inset 0 0 0 1px var(--ln-border);
+}
+.editor-shell:not(.is-focus-mode) .note-container-outline { border-radius: 14px; }
+.editor-shell:not(.is-focus-mode) .note-container-editor h2 { color: #c17bff; }
+.editor-shell:not(.is-focus-mode) .canvas-zoom-controls {
+  display: flex !important;
+  left: 17px;
+  bottom: 17px;
+  padding: 5px 8px;
+  border-color: var(--ln-border) !important;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ln-panel-raised) 96%, transparent) !important;
+  box-shadow: none;
+}
+.editor-shell:not(.is-focus-mode) .editor-status-bar { display: none !important; }
+.editor-shell:not(.is-focus-mode) .topbar-editor-tools { top: 282px; }
+.editor-shell.is-focus-mode .normal-page-header-breadcrumb { display: none; }
+.editor-shell.is-focus-mode .app-topbar-actions > * { display: none !important; }
+.editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"],
+.editor-shell.is-focus-mode .app-topbar-actions > button[title*="Focus Mode"],
+.editor-shell.is-focus-mode .app-topbar-actions > button:last-child { display: grid !important; }
+
+html[data-theme="light"] .app-rail .rail-icon { color: #5f5a54; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: linear-gradient(100deg, rgb(132 90 218 / 24%), rgb(114 77 194 / 17%)) !important;
+  color: #5c35aa !important;
+  box-shadow: inset 0 0 0 1px rgb(116 78 201 / 42%), 0 8px 18px rgb(78 52 128 / 12%);
+}
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .note-container {
+  background: rgb(255 255 255 / 44%);
+}
+
+@media (max-width: 1180px) {
+  .editor-shell:not(.is-focus-mode) .editor-title-bar { padding-left: 28px; padding-right: 28px; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs { width: 360px; }
+  .editor-shell:not(.is-focus-mode) .app-topbar-actions > span { display: none; }
+}
+
+/* v0.29 Approved dual-mode reference --------------------------------------
+   Main mode is the dense dark notebook workspace. Focus mode is the light,
+   uninterrupted paper canvas. The pixel geometry follows the approved
+   1568×1003 and 1586×992 reference frames. */
+html[data-theme="dark"] {
+  --ln-shell: #10141a;
+  --ln-rail: #11141a;
+  --ln-panel: #13171d;
+  --ln-panel-raised: #171b23;
+  --ln-toolbar: #11141a;
+  --ln-canvas: #171b27;
+  --ln-paper: #171b27;
+  --ln-text: #f4f4f6;
+  --ln-muted: #a8abb4;
+  --ln-faint: #707580;
+  --ln-border: rgb(173 180 198 / 20%);
+  --ln-soft: rgb(155 164 184 / 6%);
+  --ln-hover: rgb(169 178 198 / 10%);
+  --ln-shadow: rgb(0 0 0 / 36%);
+  --ln-accent: #a96bea;
+}
+html[data-theme="light"] {
+  --ln-shell: #fbf8f2;
+  --ln-rail: #fbf8f2;
+  --ln-panel: #fffdf8;
+  --ln-panel-raised: #fffefa;
+  --ln-toolbar: #fffefa;
+  --ln-canvas: #fbf8f2;
+  --ln-paper: #fbf8f2;
+  --ln-text: #2a2927;
+  --ln-muted: #85827e;
+  --ln-faint: #9a9690;
+  --ln-border: rgb(89 77 62 / 15%);
+  --ln-soft: rgb(89 77 62 / 5%);
+  --ln-hover: rgb(89 77 62 / 8%);
+  --ln-shadow: rgb(82 69 52 / 14%);
+  --ln-accent: #5e47d9;
+}
+
+/* Main: one 350px notebook column, canvas, 330px inspector. */
+.app-shell:not(.is-focus-mode) > main.editor-shell {
+  grid-column: 4 !important;
+  min-width: 0;
+}
+.app-shell:not(.is-focus-mode) .app-rail {
+  position: fixed !important;
+  z-index: 1000007;
+  top: 70px;
+  left: 0;
+  display: flex !important;
+  width: 350px !important;
+  height: 60px;
+  flex-direction: row !important;
+  padding: 0 !important;
+  border-right: 1px solid var(--ln-border) !important;
+  border-bottom: 1px solid var(--ln-border) !important;
+  background: linear-gradient(90deg, #11141a, #151920) !important;
+}
+.app-shell:not(.is-focus-mode) .app-rail > .rail-logo,
+.app-shell:not(.is-focus-mode) .app-rail .rail-bottom { display: none !important; }
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts {
+  display: flex;
+  width: 350px;
+  height: 60px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  margin: 0 !important;
+  padding: 0 22px 0 15px !important;
+}
+.app-shell:not(.is-focus-mode) .app-rail .rail-icon {
+  width: 42px !important;
+  height: 48px !important;
+  min-width: 42px;
+  border-radius: 0;
+  color: #aeb2bb;
+}
+.app-shell:not(.is-focus-mode) .app-rail .rail-icon::before { display: none; }
+.app-shell:not(.is-focus-mode) .app-rail .rail-icon.is-active {
+  order: 1;
+  background: transparent !important;
+  color: #a765ef;
+}
+.app-shell:not(.is-focus-mode) .app-rail .rail-icon.is-active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  left: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: #8d4de9;
+}
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts > :nth-child(2),
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts > :nth-child(5) { display: none !important; }
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts > :nth-child(3) { order: 2; }
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts > :nth-child(6) { order: 3; }
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts > :nth-child(4) { order: 4; }
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts > :nth-child(7) { order: 5; }
+
+.app-shell:not(.is-focus-mode) .navigation-drawer {
+  position: fixed !important;
+  z-index: 1000006;
+  top: 130px;
+  bottom: 62px;
+  left: 0;
+  display: flex !important;
+  width: 350px !important;
+  padding: 0 16px 14px 12px !important;
+  border-right: 1px solid var(--ln-border) !important;
+  background: radial-gradient(circle at 72% 20%, #1a1e27, #12161c 62%, #10141a) !important;
+  box-shadow: none !important;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer::before,
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-brand,
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-mode-tabs,
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-quick-links { display: none !important; }
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-search {
+  display: flex !important;
+  height: 49px;
+  min-height: 49px;
+  margin: 8px 0 8px !important;
+  border: 1px solid #3a3e47 !important;
+  border-radius: 8px;
+  background: #13171d !important;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-tree {
+  max-height: none;
+  flex: 1 1 auto;
+  margin: 0 !important;
+  padding: 6px 4px 12px !important;
+  border: 0 !important;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-tree-row,
+.app-shell:not(.is-focus-mode) .navigation-drawer .group\/tree,
+.app-shell:not(.is-focus-mode) .navigation-drawer .group\/page {
+  min-height: 42px;
+  border-radius: 8px;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-tree-row > svg { display: block; }
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-notebook-select {
+  min-height: 44px;
+  color: #e6e7ea !important;
+  font-size: 17px;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer > .min-h-0.flex-1 {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin: 0;
+  padding: 0 !important;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-sections-root { display: block !important; }
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-footer {
+  display: block !important;
+  margin: auto 0 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+.app-shell:not(.is-focus-mode) .navigation-drawer .navigator-footer > button {
+  height: 59px;
+  border: 1px solid #3a3e47;
+  border-radius: 7px;
+  background: #14181e;
+  color: #ba82ff;
+}
+.app-shell:not(.is-focus-mode) .sidebar-resizer {
+  position: fixed !important;
+  z-index: 1000008;
+  top: 130px;
+  bottom: 62px;
+  left: 342px;
+  display: block !important;
+  width: 8px !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.editor-shell:not(.is-focus-mode) {
+  padding: 70px 0 62px !important;
+  background: #11141a !important;
+}
+.editor-shell:not(.is-focus-mode) .editor-mode-bar {
+  position: fixed !important;
+  z-index: 1000010;
+  inset: 0 0 auto 0 !important;
+  display: flex;
+  width: 100vw;
+  height: 70px !important;
+  min-height: 70px;
+  overflow: visible;
+  border: 0 !important;
+  border-bottom: 1px solid #343842 !important;
+  background: linear-gradient(180deg, #11141a, #101319) !important;
+  box-shadow: none;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand {
+  display: flex !important;
+  width: 228px !important;
+  gap: 14px;
+  padding-left: 16px;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand > div:first-child {
+  width: 37px;
+  height: 37px;
+  border-radius: 6px;
+  background: linear-gradient(145deg, #5b20d6, #8d52ef) !important;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 50%);
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand > span:nth-child(2) {
+  display: inline;
+  color: #f7f7f9;
+  font-size: 25px;
+  font-weight: 600;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-brand .lenota-build-badge { display: none; }
+.editor-shell:not(.is-focus-mode) .app-topbar-history {
+  display: flex !important;
+  gap: 21px;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-history button { width: 30px; height: 36px; }
+.editor-shell:not(.is-focus-mode) .normal-page-context { display: none !important; }
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  display: flex;
+  width: 703px;
+  height: 47px;
+  min-height: 47px;
+  margin: 0;
+  padding: 0 !important;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border: 1px solid #2c3038 !important;
+  border-radius: 9px;
+  background: #171a21 !important;
+  box-shadow: 0 5px 18px rgb(0 0 0 / 28%);
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  display: flex !important;
+  width: auto;
+  height: 46px;
+  min-width: 140px;
+  flex: 1 1 0;
+  gap: 13px;
+  border: 0;
+  border-right: 1px solid #30333b;
+  border-radius: 0;
+  color: #f0eff3;
+  font-size: 18px;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:last-child { color: #64e6ef; border-right: 0; }
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: linear-gradient(90deg, #2b2745, #3b3458) !important;
+  color: #f0eff3 !important;
+  box-shadow: none;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-actions {
+  position: absolute;
+  top: 17px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  padding: 0;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > * { display: none !important; }
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .topbar-undo,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .topbar-redo,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .topbar-divider,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > button[title="Toggle active tool shelf"],
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > button[title="Find on this page"],
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > button:last-child { display: grid !important; }
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .topbar-divider { height: 33px; }
+.editor-shell:not(.is-focus-mode) .editor-title-bar { display: none !important; }
+.editor-shell:not(.is-focus-mode) .editor-stage {
+  min-height: 0;
+  padding: 0 !important;
+  border: 0;
+  background: #171b27 !important;
+}
+.editor-shell:not(.is-focus-mode) .note-canvas {
+  border: 0 !important;
+  border-radius: 0;
+  background-color: #171b27 !important;
+  background-image: radial-gradient(circle, #53618a 1px, transparent 1.25px) !important;
+  background-position: 4px 4px !important;
+  background-size: 24px 24px !important;
+  box-shadow: inset 0 1px 0 var(--ln-border) !important;
+}
+.editor-shell:not(.is-focus-mode) .canvas-zoom-controls { display: none !important; }
+.context-inspector {
+  width: 330px !important;
+  background: linear-gradient(180deg, #13171d, #10141a) !important;
+}
+.context-inspector > div:first-child { height: 63px !important; padding: 0 17px !important; }
+.context-inspector > div:nth-child(2) { padding: 0 18px 18px !important; }
+.context-inspector .inspector-card { border-radius: 8px !important; background: #13171d !important; }
+.editor-shell:not(.is-focus-mode) .editor-status-bar {
+  position: fixed;
+  z-index: 1000011;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex !important;
+  width: 100vw;
+  height: 62px !important;
+  padding: 0 22px !important;
+  border-top: 1px solid #363943 !important;
+  background: linear-gradient(180deg, #11151b, #0e1217) !important;
+  color: #dfe1e5;
+  font-size: 16px;
+}
+
+/* Focus: warm full-bleed canvas and reference-positioned floating chrome. */
+.editor-shell.is-focus-mode {
+  background: radial-gradient(circle at 55% 32%, #fffefa 0, #fbf8f2 58%, #f7f2ea 100%) !important;
+}
+.editor-shell.is-focus-mode .focus-calm-brand {
+  top: 23px !important;
+  left: 20px !important;
+  gap: 9px;
+  color: #292826;
+}
+.editor-shell.is-focus-mode .focus-calm-brand > div:first-child {
+  width: 45px;
+  height: 45px;
+  border: 1px solid #e6e0d7 !important;
+  border-radius: 11px;
+  background: #fff !important;
+  color: #5942de !important;
+  box-shadow: 0 5px 13px rgb(105 91 71 / 15%);
+}
+.editor-shell.is-focus-mode .focus-calm-brand > span:nth-child(2) { color: #2c2b29 !important; font-size: 21px; }
+.editor-shell.is-focus-mode .focus-calm-brand .lenota-build-badge { display: none; }
+.editor-shell.is-focus-mode .focus-calm-breadcrumb {
+  position: fixed;
+  top: 39px;
+  left: 179px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #373532;
+  font-size: 16px;
+}
+.editor-shell.is-focus-mode .focus-calm-status {
+  top: 106px !important;
+  right: 35px !important;
+  color: #8c8a87;
+}
+.editor-shell.is-focus-mode .editor-mode-bar {
+  position: fixed;
+  z-index: 1000010;
+  top: 61px;
+  left: calc(50% + 60px);
+  display: flex;
+  width: 712px;
+  max-width: none;
+  height: 69px;
+  min-height: 69px;
+  margin: 0;
+  padding: 0 13px;
+  transform: translateX(-50%);
+  overflow: visible;
+  border: 1px solid #e2ddd4 !important;
+  border-radius: 23px;
+  background: rgb(255 254 250 / 94%) !important;
+  box-shadow: 0 10px 23px rgb(93 76 54 / 13%);
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs {
+  display: flex;
+  width: 300px;
+  height: 55px;
+  min-height: 55px;
+  padding: 0;
+  overflow: visible;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs > button {
+  display: flex;
+  height: 45px;
+  min-width: 0;
+  flex: 1 1 0;
+  gap: 9px;
+  margin-block: 5px;
+  padding-inline: 13px;
+  border: 0;
+  border-radius: 15px;
+  color: #292826;
+  font-size: 15px;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs > button:nth-child(3),
+.editor-shell.is-focus-mode .workspace-mode-tabs > button:nth-child(4) { display: none; }
+.editor-shell.is-focus-mode .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: #f1ebff !important;
+  color: #4636c8 !important;
+}
+.focus-reference-tools {
+  display: flex;
+  height: 55px;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-around;
+  gap: 5px;
+}
+.focus-reference-tools > span {
+  display: block;
+  width: 1px;
+  height: 40px;
+  margin-inline: 2px;
+  background: #ddd7ce;
+}
+.focus-reference-tools > span:last-of-type { height: 32px; }
+.focus-reference-tools > button {
+  position: relative;
+  display: grid;
+  width: 45px;
+  height: 45px;
+  place-items: center;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: #292826;
+}
+.focus-reference-tools > button.is-active { background: #f2edff; color: #4934cf; }
+.focus-reference-tools > button.is-active::after { content: ""; position: absolute; right: 11px; bottom: 0; left: 11px; height: 2px; background: #6345e6; }
+.editor-shell.is-focus-mode .app-topbar-brand,
+.editor-shell.is-focus-mode .app-topbar-history,
+.editor-shell.is-focus-mode .normal-page-context { display: none !important; }
+.editor-shell.is-focus-mode .editor-title-bar {
+  display: none !important;
+}
+.editor-shell.is-focus-mode .editor-stage {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  padding: 0 !important;
+  overflow: hidden;
+  background: transparent !important;
+}
+.editor-shell.is-focus-mode .note-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  flex: none;
+  border: 0 !important;
+  border-radius: 0;
+  background-color: var(--ln-canvas);
+  box-shadow: none;
+}
+.editor-shell.is-focus-mode .focus-page-strip {
+  position: fixed;
+  z-index: 1000008;
+  top: 307px;
+  left: 20px;
+  display: flex;
+  width: 119px;
+  height: 430px;
+  flex: 0 0 119px;
+  gap: 8px;
+  padding: 24px 14px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  border: 1px solid #e5dfd6;
+  border-radius: 20px;
+  background: rgb(255 253 249 / 82%);
+  box-shadow: 0 8px 21px rgb(92 75 54 / 12%);
+}
+.editor-shell.is-focus-mode .focus-page-thumb { gap: 5px; color: #55514d; }
+.editor-shell.is-focus-mode .focus-page-thumb small { font-size: 13px; }
+.editor-shell.is-focus-mode .focus-page-mini {
+  width: 81px;
+  height: 91px;
+  gap: 9px;
+  padding: 13px 9px;
+  border: 1px solid #ddd7cf;
+  border-radius: 6px;
+  background: #fffcf7;
+  box-shadow: 0 2px 4px rgb(85 69 50 / 10%);
+}
+.editor-shell.is-focus-mode .focus-page-strip::-webkit-scrollbar { display: none; }
+.editor-shell.is-focus-mode .focus-page-thumb.is-active { color: #4934cf; font-weight: 700; }
+.editor-shell.is-focus-mode .focus-page-thumb.is-active .focus-page-mini {
+  border: 2px solid #6750dc;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgb(103 80 220 / 14%);
+}
+.editor-shell.is-focus-mode .canvas-zoom-controls {
+  position: fixed;
+  z-index: 1000011;
+  bottom: 23px;
+  left: 19px;
+  display: flex !important;
+  width: 201px;
+  height: 53px;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 7px;
+  border: 1px solid #e4ded5 !important;
+  border-radius: 17px;
+  background: rgb(255 254 250 / 93%) !important;
+  box-shadow: 0 6px 17px rgb(90 72 50 / 13%);
+}
+.editor-shell.is-focus-mode .app-topbar-actions {
+  position: fixed;
+  z-index: 1000011;
+  right: 24px;
+  bottom: 23px;
+  display: flex;
+  width: 177px;
+  height: 53px;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0;
+  padding: 0 10px;
+  border: 1px solid #e4ded5;
+  border-radius: 17px;
+  background: rgb(255 254 250 / 93%);
+  box-shadow: 0 6px 17px rgb(90 72 50 / 13%);
+}
+.editor-shell.is-focus-mode .app-topbar-actions > * { display: none !important; }
+.editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"],
+.editor-shell.is-focus-mode .app-topbar-actions > button[title*="Focus Mode"],
+.editor-shell.is-focus-mode .app-topbar-actions > button:last-child { display: grid !important; width: 35px; height: 35px; border-radius: 50%; color: #99958e; }
+.editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"] { border: 4px solid #eeeafa; background: #eee5d1; }
+.editor-shell.is-focus-mode .app-topbar-actions > button svg { width: 17px; height: 17px; }
+.editor-shell.is-focus-mode .editor-status-bar { display: none !important; }
+
+@media (max-width: 1260px) {
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs { width: 570px; }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button { min-width: 112px; }
+  .editor-shell.is-focus-mode .editor-mode-bar { left: calc(50% + 20px); }
+}
+
+/* v0.30 interaction architecture: every auxiliary surface floats above one canvas. */
+.topbar-editor-tools {
+  position: fixed !important;
+  z-index: 1000012 !important;
+  top: 76px !important;
+  left: 50% !important;
+  display: block !important;
+  width: min(980px, calc(100vw - 48px)) !important;
+  max-height: min(52vh, 420px);
+  transform: translate(-50%, -8px) !important;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--ln-panel-raised) 98%, transparent) !important;
+  transition: opacity 120ms ease, transform 120ms ease, visibility 0s linear 120ms;
+}
+.topbar-editor-tools.is-open {
+  transform: translate(-50%, 0) !important;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+.editor-shell.is-focus-mode .topbar-editor-tools {
+  top: 140px !important;
+  width: min(980px, calc(100vw - 48px)) !important;
+  border-color: #e2ddd4 !important;
+  background: rgb(255 254 250 / 97%) !important;
+  color: #292826;
+  box-shadow: 0 13px 32px rgb(93 76 54 / 17%) !important;
+}
+.editor-shell.is-focus-mode .topbar-editor-tools .editor-toolbar-scroll,
+.editor-shell.is-focus-mode .topbar-editor-tools .canvas-drawing-toolbar {
+  background: transparent !important;
+  color: #292826;
+}
+
+/* App dialogs must sit above the fixed editor toolbar, canvas UI, and focus chrome. */
+.app-shell > .fixed {
+  z-index: 2000000 !important;
+}
+
+/* v0.31 complete cross-mode themes ----------------------------------------
+   The reference geometry is shared by both appearances. These selectors own
+   every surface that v0.29 intentionally hard-coded for its reference theme,
+   preventing mixed light/dark chrome when the opposite appearance is chosen. */
+
+/* Normal workspace — complete light appearance. */
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .app-rail {
+  border-color: var(--ln-border) !important;
+  background: linear-gradient(90deg, #faf8f3, #f2efe8) !important;
+}
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .app-rail .rail-icon { color: #77726b !important; }
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .app-rail .rail-icon.is-active { color: var(--ln-accent) !important; }
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .navigation-drawer {
+  border-color: var(--ln-border) !important;
+  background: radial-gradient(circle at 72% 20%, #fffefa, #f7f4ed 62%, #f1eee7) !important;
+  color: var(--ln-text) !important;
+}
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .navigation-drawer .navigator-search {
+  border-color: var(--ln-border) !important;
+  background: #fffefa !important;
+  color: var(--ln-text) !important;
+}
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .navigation-drawer .navigator-notebook-select { color: var(--ln-text) !important; }
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .navigation-drawer .navigator-footer > button {
+  border-color: var(--ln-border) !important;
+  background: #fffefa !important;
+  color: var(--ln-accent) !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) { background: var(--ln-shell) !important; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .editor-mode-bar {
+  border-color: var(--ln-border) !important;
+  background: linear-gradient(180deg, #fffefa, #f7f4ed) !important;
+  color: var(--ln-text) !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .app-topbar-brand > span:nth-child(2) { color: var(--ln-text) !important; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  border-color: var(--ln-border) !important;
+  background: #fffefa !important;
+  box-shadow: 0 5px 18px var(--ln-shadow);
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  border-color: var(--ln-border) !important;
+  color: #37332e !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button:last-child { color: #167786 !important; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: linear-gradient(90deg, #eee9ff, #e5dcfb) !important;
+  color: #5039bf !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .editor-stage { background: var(--ln-canvas) !important; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .note-canvas {
+  background-color: var(--ln-canvas) !important;
+  background-image: radial-gradient(circle, rgb(91 72 173 / 45%) 1px, transparent 1.25px) !important;
+  box-shadow: inset 0 1px 0 var(--ln-border) !important;
+}
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .context-inspector {
+  border-color: var(--ln-border) !important;
+  background: linear-gradient(180deg, #fffefa, #f2efe8) !important;
+  color: var(--ln-text) !important;
+}
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .context-inspector > div:first-child,
+html[data-theme="light"] .app-shell:not(.is-focus-mode) .context-inspector .inspector-card {
+  border-color: var(--ln-border) !important;
+  background: #fffefa !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .editor-status-bar {
+  border-color: var(--ln-border) !important;
+  background: linear-gradient(180deg, #fffefa, #f1eee7) !important;
+  color: var(--ln-text) !important;
+}
+
+/* Focus workspace — complete dark appearance. */
+html[data-theme="dark"] .editor-shell.is-focus-mode {
+  background: radial-gradient(circle at 55% 32%, #1b202b 0, #121720 58%, #0d1117 100%) !important;
+  color: var(--ln-text) !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-calm-brand { color: var(--ln-text) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-calm-brand > div:first-child {
+  border-color: var(--ln-border) !important;
+  background: var(--ln-panel-raised) !important;
+  color: #a98af7 !important;
+  box-shadow: 0 5px 16px rgb(0 0 0 / 36%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-calm-brand > span:nth-child(2),
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-calm-breadcrumb { color: var(--ln-text) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-calm-status { color: var(--ln-muted) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .editor-mode-bar {
+  border-color: var(--ln-border) !important;
+  background: rgb(23 27 35 / 96%) !important;
+  color: var(--ln-text) !important;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 42%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .workspace-mode-tabs > button { color: var(--ln-text) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .workspace-mode-tabs > button[class*="bg-violet"] {
+  background: rgb(139 92 246 / 20%) !important;
+  color: #c4b5fd !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-reference-tools > span { background: var(--ln-border) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-reference-tools > button { color: var(--ln-text) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-reference-tools > button.is-active {
+  background: rgb(139 92 246 / 20%) !important;
+  color: #c4b5fd !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-strip {
+  border-color: var(--ln-border) !important;
+  background: rgb(23 27 35 / 90%) !important;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 40%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-thumb { color: var(--ln-muted) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-thumb.is-active { color: #c4b5fd !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-mini {
+  border-color: var(--ln-border) !important;
+  background: var(--ln-panel-raised) !important;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 35%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-thumb.is-active .focus-page-mini {
+  border-color: #8b5cf6 !important;
+  background: #1d2230 !important;
+  box-shadow: 0 0 0 3px rgb(139 92 246 / 20%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .canvas-zoom-controls,
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions {
+  border-color: var(--ln-border) !important;
+  background: rgb(23 27 35 / 96%) !important;
+  color: var(--ln-muted) !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"] {
+  border-color: rgb(139 92 246 / 22%) !important;
+  background: rgb(139 92 246 / 16%) !important;
+  color: #c4b5fd !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .topbar-editor-tools {
+  border-color: var(--ln-border) !important;
+  background: rgb(23 27 35 / 98%) !important;
+  color: var(--ln-text) !important;
+  box-shadow: 0 16px 38px rgb(0 0 0 / 46%) !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .topbar-editor-tools .editor-toolbar-scroll,
+html[data-theme="dark"] .editor-shell.is-focus-mode .topbar-editor-tools .canvas-drawing-toolbar {
+  background: transparent !important;
+  color: var(--ln-text) !important;
+}
+
+/* Default contrast-aware ink colors remain readable after a later theme
+   switch. Custom colors are deliberately untouched. */
+html[data-theme="light"] [data-ln-text-color="#d4d4d8"],
+html[data-theme="light"] [data-ln-text-color="#e4e4e7"],
+html[data-theme="light"] [data-ln-text-color="#f5f5f5"],
+html[data-theme="light"] [data-math-color="#d4d4d8"],
+html[data-theme="light"] [data-math-color="#e4e4e7"],
+html[data-theme="light"] [data-math-color="#f5f5f5"] { color: #2f3138 !important; }
+html[data-theme="dark"] [data-ln-text-color="#25231f"],
+html[data-theme="dark"] [data-ln-text-color="#2f3138"],
+html[data-theme="dark"] [data-ln-text-color="#111827"],
+html[data-theme="dark"] [data-math-color="#25231f"],
+html[data-theme="dark"] [data-math-color="#2f3138"],
+html[data-theme="dark"] [data-math-color="#111827"] { color: #d4d4d8 !important; }
+
+.custom-size-input-field { appearance: textfield; }
+.custom-size-input-field::-webkit-inner-spin-button,
+.custom-size-input-field::-webkit-outer-spin-button { margin: 0; }
+.custom-size-input .custom-size-preset {
+  border-left-color: var(--ln-border) !important;
+  background: transparent !important;
+  color: var(--ln-muted) !important;
+}
+.custom-size-input:focus-within {
+  border-color: color-mix(in srgb, var(--ln-accent) 62%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ln-accent) 13%, transparent);
+}
+
+/* Focus-mode additions: direct layer/fill controls and page creation. */
+.editor-shell.is-focus-mode .focus-reference-tools > button:disabled {
+  cursor: default;
+  opacity: .34;
+}
+.editor-shell.is-focus-mode .focus-reference-tools {
+  position: relative;
+}
+.editor-shell.is-focus-mode .focus-tool-popover {
+  position: absolute;
+  z-index: 1000015;
+  top: 61px;
+  display: grid;
+  min-width: 172px;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid #ded8cf;
+  border-radius: 13px;
+  background: rgb(255 254 250 / 98%);
+  box-shadow: 0 12px 28px rgb(82 65 46 / 18%);
+}
+.editor-shell.is-focus-mode .focus-tool-popover-layers { right: 54px; }
+.editor-shell.is-focus-mode .focus-tool-popover-fill { right: 8px; }
+.editor-shell.is-focus-mode .focus-tool-popover > button,
+.editor-shell.is-focus-mode .focus-tool-popover > label {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #383532;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+.editor-shell.is-focus-mode .focus-tool-popover > button:hover { background: #f2edff; color: #4934cf; }
+.editor-shell.is-focus-mode .focus-fill-color { justify-content: space-between; }
+.editor-shell.is-focus-mode .focus-fill-color input {
+  width: 34px;
+  height: 26px;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.editor-shell.is-focus-mode .focus-page-create {
+  display: flex;
+  width: 81px;
+  min-height: 35px;
+  flex: 0 0 35px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px dashed #cfc7bd;
+  border-radius: 9px;
+  background: rgb(255 255 255 / 58%);
+  color: #5d54b5;
+  font-size: 11px;
+  font-weight: 700;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+.editor-shell.is-focus-mode .focus-page-create:hover {
+  border-color: #7c68df;
+  background: #f3efff;
+  color: #4934cf;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-tool-popover {
+  border-color: var(--ln-border) !important;
+  background: rgb(29 34 48 / 98%) !important;
+  box-shadow: 0 14px 32px rgb(0 0 0 / 42%);
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-tool-popover > button,
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-tool-popover > label { color: var(--ln-text) !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-tool-popover > button:hover { background: rgb(139 92 246 / 20%) !important; color: #c4b5fd !important; }
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-create {
+  border-color: #4b5262;
+  background: rgb(255 255 255 / 3%);
+  color: #c4b5fd;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .focus-page-create:hover {
+  border-color: #8b5cf6;
+  background: rgb(139 92 246 / 14%);
+}
+
+/* Normal-mode first-class Layers and Fill tools. These mirror the focused-mode
+   controls while keeping the existing contextual selection actions available. */
+.editor-shell:not(.is-focus-mode) .normal-selection-tools {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+  border-right: 1px solid rgb(255 255 255 / 10%);
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #a3a3a3;
+  transition: background 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button.is-active {
+  background: rgb(139 92 246 / 20%);
+  color: #ddd6fe;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button:disabled {
+  cursor: default;
+  opacity: .32;
+}
+.editor-shell:not(.is-focus-mode) .normal-tool-popover {
+  position: absolute;
+  z-index: 1000015;
+  top: 38px;
+  display: grid;
+  min-width: 172px;
+  gap: 4px;
+  padding: 7px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 12px;
+  background: rgb(31 31 35 / 98%);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 42%);
+}
+.editor-shell:not(.is-focus-mode) .normal-tool-popover-layers { left: 4px; }
+.editor-shell:not(.is-focus-mode) .normal-tool-popover-fill { left: 38px; }
+.editor-shell:not(.is-focus-mode) .normal-tool-popover > button,
+.editor-shell:not(.is-focus-mode) .normal-tool-popover > label {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #e5e5e5;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+.editor-shell:not(.is-focus-mode) .normal-tool-popover > button:hover {
+  background: rgb(139 92 246 / 16%);
+  color: #ede9fe;
+}
+.editor-shell:not(.is-focus-mode) .normal-fill-color { justify-content: space-between; }
+.editor-shell:not(.is-focus-mode) .normal-fill-color input {
+  width: 34px;
+  height: 26px;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-tool-popover {
+  border-color: #ded8cf;
+  background: rgb(255 254 250 / 98%);
+  box-shadow: 0 12px 28px rgb(82 65 46 / 18%);
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-tool-popover > button,
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-tool-popover > label { color: #383532; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-tool-popover > button:hover {
+  background: #f2edff;
+  color: #4934cf;
+}
+
+/* Focus-mode classic toolbar restoration ------------------------------------
+   Keep the original larger 712x69 rounded focus toolbar that gives the mode
+   its distinct, calm layout. Draw keeps its direct tools in this bar; the
+   detailed shelf is contextual (Write opens formatting, Draw opens it only
+   when explicitly requested, while AI may open it because AI needs it). */
+.editor-shell.is-focus-mode .editor-mode-bar {
+  left: calc(50% + 60px) !important;
+  width: 712px !important;
+  max-width: none !important;
+  height: 69px !important;
+  min-height: 69px !important;
+  padding: 0 13px !important;
+  transform: translateX(-50%) !important;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs {
+  width: 300px !important;
+  height: 55px !important;
+  min-height: 55px !important;
+  flex: 0 0 300px;
+}
+.editor-shell.is-focus-mode .workspace-mode-tabs > button {
+  height: 45px !important;
+  margin-block: 5px !important;
+  padding-inline: 13px !important;
+  border-radius: 15px !important;
+  font-size: 15px !important;
+}
+.editor-shell.is-focus-mode .focus-reference-tools {
+  min-width: 0;
+  height: 55px !important;
+  flex: 1 1 auto;
+  justify-content: space-around;
+  gap: 5px;
+}
+.editor-shell.is-focus-mode .focus-reference-tools > button {
+  width: 45px !important;
+  height: 45px !important;
+  border-radius: 14px !important;
+}
+.editor-shell.is-focus-mode .focus-reference-tools > span {
+  height: 40px !important;
+  margin-inline: 2px !important;
+}
+.editor-shell.is-focus-mode .focus-reference-tools > span:last-of-type {
+  height: 32px !important;
+}
+
+/* Keep utilities as their own small capsule, like the original focus design,
+   but force it to the bottom-right so it can never cover the focus toolbar. */
+.editor-shell.is-focus-mode .app-topbar-actions {
+  position: fixed !important;
+  z-index: 1000011 !important;
+  top: auto !important;
+  right: 24px !important;
+  bottom: 23px !important;
+  left: auto !important;
+  display: flex !important;
+  width: 194px !important;
+  height: 53px !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 1px solid #e4ded5 !important;
+  border-radius: 17px !important;
+  background: rgb(255 254 250 / 93%) !important;
+  box-shadow: 0 6px 17px rgb(90 72 50 / 13%) !important;
+}
+.editor-shell.is-focus-mode .app-topbar-actions > * { display: none !important; }
+.editor-shell.is-focus-mode .app-topbar-actions > button[title="Toggle active tool shelf"],
+.editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"],
+.editor-shell.is-focus-mode .app-topbar-actions > button[title*="Focus Mode"],
+.editor-shell.is-focus-mode .app-topbar-actions > button:last-child {
+  display: grid !important;
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 50% !important;
+  color: #99958e !important;
+}
+.editor-shell.is-focus-mode .app-topbar-actions > button:hover {
+  background: #f1ebff !important;
+  color: #4934cf !important;
+}
+.editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"] {
+  border: 4px solid #eeeafa !important;
+  background: #eee5d1 !important;
+}
+.editor-shell.is-focus-mode .app-topbar-actions > button[title="Toggle active tool shelf"].bg-violet-500\/15 {
+  background: #f1ebff !important;
+  color: #4934cf !important;
+}
+.editor-shell.is-focus-mode .app-topbar-actions > button svg {
+  width: 17px !important;
+  height: 17px !important;
+}
+
+/* Restore the original roomy contextual shelf. It is not duplicated for Draw:
+   focused Draw keeps this closed until Settings is pressed. Write opens it so
+   the full editor formatting controls are available again. */
+.editor-shell.is-focus-mode .topbar-editor-tools {
+  top: 140px !important;
+  width: min(980px, calc(100vw - 48px)) !important;
+  max-width: 980px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 13px 32px rgb(93 76 54 / 17%) !important;
+}
+
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions {
+  border-color: var(--ln-border) !important;
+  background: rgb(23 27 35 / 96%) !important;
+  color: var(--ln-muted) !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 40%) !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button[title="Toggle active tool shelf"],
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"],
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button[title*="Focus Mode"],
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button:last-child {
+  color: var(--ln-muted) !important;
+}
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button:hover,
+html[data-theme="dark"] .editor-shell.is-focus-mode .app-topbar-actions > button[title^="Switch to"] {
+  background: rgb(139 92 246 / 16%) !important;
+  color: #c4b5fd !important;
+}
+
+@media (max-width: 980px) {
+  .editor-shell.is-focus-mode .editor-mode-bar {
+    left: calc(50% + 34px) !important;
+    width: min(712px, calc(100vw - 110px)) !important;
+  }
+  .editor-shell.is-focus-mode .workspace-mode-tabs {
+    width: 250px !important;
+    flex-basis: 250px !important;
+  }
+  .editor-shell.is-focus-mode .workspace-mode-tabs > button {
+    padding-inline: 9px !important;
+    font-size: 13px !important;
+  }
+  .editor-shell.is-focus-mode .focus-reference-tools > button {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* 0.28 focused/normal toolbar visibility follow-up -------------------------
+   Keep Layers and Fill obvious in the normal workspace. The previous static
+   placement sat under the left side of the header and disabled controls faded
+   enough to look missing. Pin these controls in the free space immediately
+   before the normal right-side actions and keep their labels readable. */
+.editor-shell:not(.is-focus-mode) .normal-selection-tools {
+  position: absolute !important;
+  z-index: 1000012;
+  top: 17px !important;
+  right: 326px !important;
+  display: flex !important;
+  height: 36px;
+  align-items: center;
+  gap: 5px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button {
+  display: flex !important;
+  width: auto !important;
+  min-width: 58px;
+  height: 36px !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid #30343d !important;
+  border-radius: 8px !important;
+  background: #171a21 !important;
+  color: #d4d4d8 !important;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 1 !important;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button:hover:not(:disabled) {
+  border-color: #6653ca !important;
+  background: #29243f !important;
+  color: #f1edff !important;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button.is-active {
+  border-color: #765ee3 !important;
+  background: #30284d !important;
+  color: #e8e1ff !important;
+}
+.editor-shell:not(.is-focus-mode) .normal-selection-tools > button:disabled {
+  color: #777984 !important;
+  opacity: .72 !important;
+}
+.editor-shell:not(.is-focus-mode) .normal-tool-popover {
+  top: 42px !important;
+}
+.editor-shell:not(.is-focus-mode) .normal-tool-popover-layers { left: 0 !important; }
+.editor-shell:not(.is-focus-mode) .normal-tool-popover-fill { left: 66px !important; }
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-selection-tools > button {
+  border-color: #ddd7cf !important;
+  background: #fffefa !important;
+  color: #4b4741 !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-selection-tools > button:hover:not(:disabled),
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-selection-tools > button.is-active {
+  border-color: #aa9aeb !important;
+  background: #eee9ff !important;
+  color: #5039bf !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .normal-selection-tools > button:disabled {
+  color: #9e9990 !important;
+  opacity: .78 !important;
+}
+
+/* Raise the focused utility capsule above the bottom page/selection controls.
+   Keep the classic separate capsule; only its vertical position changes. */
+.editor-shell.is-focus-mode .app-topbar-actions {
+  bottom: 92px !important;
+}
+
+@media (max-width: 1220px) {
+  .editor-shell:not(.is-focus-mode) .normal-selection-tools {
+    right: 238px !important;
+  }
+  .editor-shell:not(.is-focus-mode) .normal-selection-tools > button {
+    min-width: 36px;
+    padding-inline: 8px;
+  }
+  .editor-shell:not(.is-focus-mode) .normal-selection-tools > button > span {
+    display: none;
+  }
+  .editor-shell:not(.is-focus-mode) .normal-tool-popover-fill { left: 41px !important; }
+}
+
+
+/* 0.28 normal navigator resize/collapse repair -----------------------------
+   The visual notebook panel was previously fixed at 350px while React resized
+   only the grid track underneath it. Keep the fixed-position reference design,
+   but drive every visible edge from the same live layout state. */
+.app-shell:not(.is-focus-mode) .app-rail,
+.app-shell:not(.is-focus-mode) .navigation-drawer {
+  width: var(--ln-navigation-total-width, 350px) !important;
+  max-width: calc(100vw - 240px) !important;
+  transition: none !important;
+}
+.app-shell:not(.is-focus-mode) .app-rail .rail-shortcuts {
+  width: 100% !important;
+}
+.app-shell:not(.is-focus-mode) .sidebar-resizer {
+  left: var(--ln-navigation-resizer-left, 342px) !important;
+  width: 8px !important;
+  cursor: col-resize !important;
+  touch-action: none;
+}
+.app-shell:not(.is-focus-mode) .sidebar-resizer > div:first-child {
+  width: 2px !important;
+  background: color-mix(in srgb, var(--ln-border) 80%, transparent) !important;
+}
+.app-shell:not(.is-focus-mode) .sidebar-resizer button {
+  opacity: .82 !important;
+  pointer-events: auto !important;
+  border-color: color-mix(in srgb, var(--ln-border) 85%, transparent) !important;
+  background: color-mix(in srgb, var(--ln-panel-raised) 94%, transparent) !important;
+  color: var(--ln-muted) !important;
+}
+.app-shell:not(.is-focus-mode) .sidebar-resizer:hover button,
+.app-shell:not(.is-focus-mode) .sidebar-resizer button:hover,
+.app-shell:not(.is-focus-mode) .sidebar-resizer button:focus-visible {
+  opacity: 1 !important;
+  color: var(--ln-accent) !important;
+}
+
+/* A true collapsed state: remove the whole notebook panel rather than leaving
+   a fixed 350px overlay above an editor that has already expanded underneath. */
+.app-shell:not(.is-focus-mode).is-navigation-collapsed .app-rail,
+.app-shell:not(.is-focus-mode).is-navigation-collapsed .navigation-drawer {
+  display: none !important;
+  width: 0 !important;
+}
+.app-shell:not(.is-focus-mode).is-navigation-collapsed .sidebar-resizer {
+  left: 0 !important;
+  width: 18px !important;
+  cursor: default !important;
+  background: transparent !important;
+}
+.app-shell:not(.is-focus-mode).is-navigation-collapsed .sidebar-resizer > div:first-child {
+  left: 0 !important;
+  transform: none !important;
+}
+.app-shell:not(.is-focus-mode).is-navigation-collapsed .sidebar-resizer button {
+  left: 13px !important;
+  opacity: 1 !important;
+  box-shadow: 0 4px 14px var(--ln-shadow) !important;
+}
+
+/* While dragging, avoid accidental text/image selection that can make the
+   resize feel sticky or erratic. */
+body:has(.sidebar-resizer:active) {
+  user-select: none;
+}
+
+/* 0.28 toolbar / inspector / canvas settings repair -------------------------
+   Keep context actions inside the main normal toolbar, make Inspector a real
+   top-bar action, and let the saved CanvasBackground own both normal/focus
+   paper appearance instead of the old reference-only forced dot grid. */
+.editor-shell .note-canvas {
+  background-color: var(--ln-page-background-color, var(--ln-canvas)) !important;
+  background-image: var(--ln-page-background-image, none) !important;
+  background-position: var(--ln-page-background-position, 0 0) !important;
+  background-size: var(--ln-page-background-size, auto) !important;
+}
+
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+  width: min(890px, calc(100vw - 500px)) !important;
+  overflow: visible !important;
+}
+.editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button {
+  min-width: 92px !important;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools {
+  position: relative;
+  display: flex;
+  height: 46px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 0 5px 0 7px;
+  border-left: 1px solid #30333b;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools > button {
+  display: flex;
+  height: 34px;
+  min-width: 70px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #d7d7dc;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools > button:hover,
+.editor-shell:not(.is-focus-mode) .workspace-context-tools > button.is-active {
+  background: #30284d;
+  color: #eee8ff;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools > button.is-menu-open {
+  background: color-mix(in srgb, #30284d 58%, transparent);
+  color: #dcd5ef;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools > button[aria-disabled="true"] {
+  color: #7f828c;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools .normal-tool-popover {
+  top: 51px !important;
+  right: 0 !important;
+  left: auto !important;
+}
+.editor-shell:not(.is-focus-mode) .workspace-context-tools .normal-tool-popover-layers { right: 74px !important; }
+.normal-tool-hint {
+  max-width: 220px;
+  padding: 5px 8px 7px;
+  color: #a7a7af;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-context-tools {
+  border-left-color: var(--ln-border);
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-context-tools > button {
+  color: #514d47;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-context-tools > button:hover,
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-context-tools > button.is-active {
+  background: #eee9ff;
+  color: #5039bf;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .workspace-context-tools > button.is-menu-open {
+  background: #f5f1ff;
+  color: #625b72;
+}
+html[data-theme="light"] .normal-tool-hint { color: #77716a; }
+
+/* The older absolute Layers/Fill cluster is intentionally retired. */
+.editor-shell:not(.is-focus-mode) .normal-selection-tools { display: none !important; }
+
+/* Inspector belongs in the normal top-right chrome. Do not hide or float the
+   trigger at the bottom edge, and reserve a stable right-side panel when open. */
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action {
+  position: static !important;
+  display: grid !important;
+  width: 36px !important;
+  height: 36px !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: #c9cbd2 !important;
+  box-shadow: none !important;
+}
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action:hover,
+.editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action[aria-pressed="true"] {
+  border-color: #6653ca !important;
+  background: #29243f !important;
+  color: #eee8ff !important;
+}
+.editor-shell:not(.is-focus-mode) .context-inspector {
+  position: relative;
+  z-index: 40;
+  display: block;
+  width: 330px !important;
+  min-width: 330px;
+  height: 100%;
+  flex: 0 0 330px;
+  overflow-y: auto;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action {
+  color: #59544e !important;
+}
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action:hover,
+html[data-theme="light"] .editor-shell:not(.is-focus-mode) .app-topbar-actions > .page-inspector-action[aria-pressed="true"] {
+  border-color: #aa9aeb !important;
+  background: #eee9ff !important;
+  color: #5039bf !important;
+}
+
+@media (max-width: 1320px) {
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs {
+    width: min(760px, calc(100vw - 430px)) !important;
+  }
+  .editor-shell:not(.is-focus-mode) .workspace-mode-tabs > button { min-width: 76px !important; }
+  .editor-shell:not(.is-focus-mode) .workspace-context-tools > button {
+    min-width: 40px;
+    padding-inline: 7px;
+  }
+  .editor-shell:not(.is-focus-mode) .workspace-context-tools > button > span { display: none; }
+}
+
+/* v0.28 fill-tool + unified paper state correction -------------------------
+   Older approved-reference rules set normal-mode paper with higher-specificity
+   !important selectors. These final selectors deliberately outrank them so the
+   page's persisted CanvasBackground is the single source of truth in normal
+   and Focus Mode. */
+html[data-theme] .editor-shell:not(.is-focus-mode) .note-canvas,
+html[data-theme] .editor-shell.is-focus-mode .note-canvas {
+  background-color: var(--ln-page-background-color, var(--ln-canvas)) !important;
+  background-image: var(--ln-page-background-image, none) !important;
+  background-position: var(--ln-page-background-position, 0 0) !important;
+  background-size: var(--ln-page-background-size, auto) !important;
+}
+
+.editor-shell .note-canvas.is-fill-tool { cursor: cell !important; }
+
+.editor-shell.is-focus-mode .focus-reference-tools > button.is-menu-open {
+  background: color-mix(in srgb, var(--ln-accent) 8%, transparent);
+}

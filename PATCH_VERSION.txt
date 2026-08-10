@@ -1,0 +1,26 @@
+LeNota reference workspace patch
+Version: 0.28.0
+
+Expected visible badge: v0.28.0
+
+Run from this extracted directory:
+  ./RUN_UPDATED_APP.sh
+
+This build keeps the approved v0.28.0 normal and Focus Mode layouts while
+repairing the latest toolbar, Inspector, canvas-paper, and notebook-sidebar
+regressions. In normal mode, Layers and Fill are integrated into the main
+workspace toolbar instead of floating outside it. Fill is always reachable: it
+changes the selected rectangle/ellipse when applicable and also sets the fill
+used by newly drawn rectangles/ellipses. Draw > Shapes exposes explicit stroke
+and fill controls as well.
+
+The Inspector has a visible top-right toggle and opens as a stable 330px
+right-side panel. Page color, Plain/Ruled/Grid paper style, and spacing are now
+driven by the saved CanvasBackground in both normal and Focus Mode; the old
+normal-mode CSS that visually forced a dotted canvas no longer overrides those
+settings. The normal notebook sidebar retains the repaired drag resizing and
+true collapse/expand behavior. Focus Mode retains its classic larger toolbar,
+working Write shelf, Layers/Fill tools, New Page control, and raised utility
+capsule so it does not cover lower controls.
+
+If the application header does not show v0.28.0, a different copy is running.
