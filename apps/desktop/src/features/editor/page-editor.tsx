@@ -53,6 +53,7 @@ import { canvasToClientPoint, canvasTransformFromRenderedRect, clientDeltaToCanv
 import { analyzeLatexSolveCandidate } from "./equation-solver";
 import { buildMathGraphGeometry, normalizeMathGraphSpec } from "./math-graph";
 import { convertedInkColor, themeAwareInkColor } from "./ink-output-color";
+import { fillPathData, findEnclosedFillRegion, normalizeFillLoops, type FillPoint } from "./fill-regions";
 import { customSizeOr, parseCustomSize } from "./custom-size";
 import { canvasViewportTransform, fitCanvasBounds, normalizeCanvasViewport, type CanvasBounds } from "@/features/layout/app-layout";
 import type { Attachment, Page, Tag } from "@/types/domain";
@@ -120,7 +121,7 @@ interface InkStroke {
 }
 interface CanvasShape {
   id: string;
-  kind: "rectangle" | "ellipse" | "line" | "arrow";
+  kind: "rectangle" | "ellipse" | "line" | "arrow" | "path";
   x1: number;
   y1: number;
   x2: number;
@@ -130,6 +131,7 @@ interface CanvasShape {
   strokeWidth: number;
   rotation?: number;
   zIndex?: number;
+  pathLoops?: FillPoint[][];
 }
 interface CanvasBackground {
   pattern: "plain" | "grid" | "ruled";
@@ -1364,7 +1366,7 @@ function loadCanvas(contentJson: string, plainText: string): CanvasDocument {
         viewport: { x: parsed.viewport?.x ?? 100, y: parsed.viewport?.y ?? 80, zoom: clamp(parsed.viewport?.zoom ?? 1, .35, 2.5) },
         containers: loadedContainers,
         ink: Array.isArray(parsed.ink) ? parsed.ink.filter(stroke => Array.isArray(stroke.points) && stroke.points.length > 0) : [],
-        shapes: Array.isArray(parsed.shapes) ? parsed.shapes.filter(shape => ["rectangle","ellipse","line","arrow"].includes(shape.kind)).map((shape, index) => ({ ...shape, zIndex: Number(shape.zIndex) || index + 1 })) : [],
+        shapes: Array.isArray(parsed.shapes) ? parsed.shapes.filter(shape => ["rectangle","ellipse","line","arrow","path"].includes(shape.kind)).map((shape, index) => ({ ...shape, zIndex: Number(shape.zIndex) || index + 1 })) : [],
         background: {
           pattern: parsed.background?.pattern === "grid" || parsed.background?.pattern === "ruled" || parsed.background?.pattern === "plain" ? parsed.background.pattern : "grid",
           color: typeof parsed.background?.color === "string" ? parsed.background.color : "#151823",
@@ -2935,7 +2937,10 @@ export function PageEditor(props: PageEditorProps) {
   const insertAttachmentsRef = useRef<(paths:string[], clientX:number, clientY:number)=>Promise<void>>(async()=>{});
   const lastNativeDropRef = useRef<{signature:string; at:number}>({signature:"",at:0});
   const wheelCommitRef = useRef<number | null>(null);
+  const wheelRectRef = useRef<DOMRect | null>(null);
   const wheelHandlerRef = useRef<(event: WheelEvent) => void>(() => {});
+  const inkPathCacheRef = useRef(new WeakMap<InkPoint[], string>());
+  const backgroundDomRef = useRef({ position: "", size: "" });
   const viewportFrameRef = useRef<number | null>(null);
   const pendingViewportDomRef = useRef<{x:number;y:number;zoom:number} | null>(null);
   const wavCaptureRef = useRef<WavCaptureSession | null>(null);
@@ -3392,10 +3397,17 @@ export function PageEditor(props: PageEditorProps) {
       const style=backgroundStyle(stateRef.current.background,theme,next);
       const position=String(style.backgroundPosition??"0 0");
       const size=String(style.backgroundSize??"auto");
-      canvasRef.current.style.backgroundPosition=position;
-      canvasRef.current.style.backgroundSize=size;
-      canvasRef.current.style.setProperty("--ln-page-background-position",position);
-      canvasRef.current.style.setProperty("--ln-page-background-size",size);
+      // The final theme rules consume these CSS variables with !important.
+      // Avoid writing both the ordinary background properties and the same
+      // variables on every zoom frame, and skip values that did not change.
+      if(backgroundDomRef.current.position!==position){
+        backgroundDomRef.current.position=position;
+        canvasRef.current.style.setProperty("--ln-page-background-position",position);
+      }
+      if(backgroundDomRef.current.size!==size){
+        backgroundDomRef.current.size=size;
+        canvasRef.current.style.setProperty("--ln-page-background-size",size);
+      }
     }
     const label=`${Math.round(next.zoom*100)}%`;
     if(floatingZoomRef.current)floatingZoomRef.current.textContent=label;
@@ -3425,6 +3437,7 @@ export function PageEditor(props: PageEditorProps) {
     syncViewportDom(safe);
     setViewport(safe);
     publish(stateRef.current.containers,stateRef.current.ink,safe,stateRef.current.shapes,stateRef.current.background);
+    wheelRectRef.current=null;
     wheelCommitRef.current=null;
   };
   const scheduleViewportCommit=(delay=140)=>{
@@ -3456,6 +3469,13 @@ export function PageEditor(props: PageEditorProps) {
     const point=clientToCanvasPoint(clientX,clientY,renderedCanvasTransform());
     return {...point,pressure:1};
   },[renderedCanvasTransform]);
+  const inkPathData=(points:InkPoint[])=>{
+    const cached=inkPathCacheRef.current.get(points);
+    if(cached!==undefined)return cached;
+    const path=strokePath(points);
+    inkPathCacheRef.current.set(points,path);
+    return path;
+  };
   const worldDelta = useCallback((clientDx:number,clientDy:number) => clientDeltaToCanvasDelta(clientDx,clientDy,renderedCanvasTransform()),[renderedCanvasTransform]);
   const clientPoint = useCallback((x:number,y:number) => canvasToClientPoint(x,y,renderedCanvasTransform()),[renderedCanvasTransform]);
 
@@ -3669,7 +3689,7 @@ export function PageEditor(props: PageEditorProps) {
     ? focusPages
     : [linkablePages.find(item=>item.id===page.id)??{id:page.id,title:title.trim()||"Untitled page",notebookName:"",sectionName:""}];
   const zoomAt=(factor:number,clientX?:number,clientY?:number,transient=false)=>{
-    const rect=canvasRef.current?.getBoundingClientRect();
+    const rect=(transient&&wheelRectRef.current)||canvasRef.current?.getBoundingClientRect();
     const cx=clientX!==undefined?clientX-(rect?.left??0):(rect?.width??800)/2;
     const cy=clientY!==undefined?clientY-(rect?.top??0):(rect?.height??600)/2;
     const current=stateRef.current.viewport;
@@ -3681,17 +3701,23 @@ export function PageEditor(props: PageEditorProps) {
   };
   const wheelCanvas=(e:WheelEvent)=>{
     e.preventDefault();
+    // Reuse one geometry measurement for a short wheel/pinch burst. A forced
+    // getBoundingClientRect() on every high-rate trackpad event can itself
+    // become the source of visible stutter. The cache is cleared on commit.
+    const rect=wheelRectRef.current??canvasRef.current?.getBoundingClientRect()??null;
+    if(rect&&!wheelRectRef.current)wheelRectRef.current=rect;
     // WebKitGTK can report wheel deltas in pixels, lines, or pages. Treating a
     // page-sized delta as pixels caused apparently random multi-screen jumps.
-    const rect = canvasRef.current?.getBoundingClientRect();
-    const unit = e.deltaMode === 1 ? 24 : e.deltaMode === 2 ? Math.max(480, rect?.height ?? 720) : 1;
-    const dx = clamp(e.deltaX * unit, -180, 180);
-    const dy = clamp(e.deltaY * unit, -180, 180);
-    if(e.ctrlKey || e.metaKey){
-      if (Math.abs(dy) < 0.01) return;
-      // Trackpad pinch on WebKitGTK arrives as Ctrl+wheel. Use the magnitude
-      // instead of a fixed zoom step so two-finger pinch feels continuous.
-      const factor=clamp(Math.exp(-dy*0.0028),.84,1.19);
+    const unit=e.deltaMode===1?24:e.deltaMode===2?Math.max(480,rect?.height??720):1;
+    const dx=clamp(e.deltaX*unit,-180,180);
+    const dy=clamp(e.deltaY*unit,-180,180);
+    if(e.ctrlKey||e.metaKey){
+      if(Math.abs(dy)<.01)return;
+      // Pinch deltas from WebKitGTK are uneven. The old ±19% per-event cap was
+      // large enough for one noisy event to look like a jump. Keep the native
+      // event cadence, but cap each event to a much smaller continuous step.
+      const pinchDelta=clamp(dy,-48,48);
+      const factor=clamp(Math.exp(-pinchDelta*.0018),.92,1.09);
       zoomAt(factor,e.clientX,e.clientY,true);
       return;
     }
@@ -4219,12 +4245,33 @@ export function PageEditor(props: PageEditorProps) {
       const shapeElement=eventTarget.closest<SVGElement>(".canvas-shape");
       const shapeId=shapeElement?.dataset.shapeId;
       const shape=shapeId?stateRef.current.shapes.find(item=>item.id===shapeId):undefined;
-      if(!shape || (shape.kind!=="rectangle"&&shape.kind!=="ellipse"))return;
-      e.preventDefault();e.stopPropagation();
       const fill=shapeFillColor==="transparent"?"#8b5cf6":shapeFillColor;
+      if(shape && (shape.kind==="rectangle"||shape.kind==="ellipse"||shape.kind==="path")){
+        e.preventDefault();e.stopPropagation();
+        if(shapeFillColor==="transparent")setShapeFillColor(fill);
+        mutateShapes(items=>items.map(item=>item.id===shape.id?{...item,fill}:item),true);
+        setSelectedShapeIds(new Set([shape.id]));
+        setSelectedIds(new Set());setSelectedInkIds(new Set());setActiveEditor(null);
+        return;
+      }
+      const region=findEnclosedFillRegion(point,stateRef.current.ink,stateRef.current.shapes,{
+        cellSize:clamp(1.15/stateRef.current.viewport.zoom,.7,2.2),initialRadius:280,maxRadius:1800,
+      });
+      if(!region){
+        e.preventDefault();e.stopPropagation();
+        setAutoInkStatus("Fill needs a closed boundary");
+        window.setTimeout(()=>setAutoInkStatus(current=>current==="Fill needs a closed boundary"?"":current),1800);
+        return;
+      }
+      e.preventDefault();e.stopPropagation();
       if(shapeFillColor==="transparent")setShapeFillColor(fill);
-      mutateShapes(items=>items.map(item=>item.id===shape.id?{...item,fill}:item),true);
-      setSelectedShapeIds(new Set([shape.id]));
+      const regionShape:CanvasShape={
+        id:newId(),kind:"path",x1:region.bounds.left,y1:region.bounds.top,x2:region.bounds.right,y2:region.bounds.bottom,
+        stroke:fill,fill,strokeWidth:.9,pathLoops:normalizeFillLoops(region.loops,region.bounds),
+        zIndex:Math.min(0,...stateRef.current.shapes.map(item=>item.zIndex??0))-1,
+      };
+      mutateShapes(items=>[regionShape,...items],true);
+      setSelectedShapeIds(new Set([regionShape.id]));
       setSelectedIds(new Set());setSelectedInkIds(new Set());setActiveEditor(null);
       return;
     }
@@ -4380,8 +4427,8 @@ export function PageEditor(props: PageEditorProps) {
   };
   const fillSelectedShapes=(fill:string)=>{
     const ids=new Set(selectedShapeIds);
-    if(!stateRef.current.shapes.some(item=>ids.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse")))return;
-    mutateShapes(items=>items.map(item=>ids.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse")?{...item,fill}:item),true);
+    if(!stateRef.current.shapes.some(item=>ids.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"||item.kind==="path")))return;
+    mutateShapes(items=>items.map(item=>ids.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"||item.kind==="path")?{...item,fill}:item),true);
   };
   const applyShapeFill=(fill:string)=>{
     setShapeFillColor(fill);
@@ -4767,13 +4814,13 @@ export function PageEditor(props: PageEditorProps) {
         onOpenAi={()=>{setFocusToolMenu(null);setToolbarMode("draw");setDrawToolbarPanel("ai");setDrawingTool("select");setToolShelfOpen(true);}}
         contextTools={!focusMode?<div className="workspace-context-tools" role="toolbar" aria-label="Layer and fill tools">
           <button type="button" className={focusToolMenu==="layers"?"is-menu-open":""} title="Layers" aria-label="Layers" aria-expanded={focusToolMenu==="layers"} aria-disabled={!selectedIds.size&&!selectedShapeIds.size} onClick={()=>setFocusToolMenu(value=>value==="layers"?null:"layers")}><Layers className="size-4"/><span>Layers</span></button>
-          <button type="button" className={drawingTool==="fill"?"is-active":""} title="Fill tool — click a rectangle or ellipse to fill it" aria-label="Fill" aria-pressed={drawingTool==="fill"} aria-expanded={focusToolMenu==="fill"} onClick={()=>{setToolbarMode("draw");setToolShelfOpen(false);setDrawingTool("fill");if(shapeFillColor==="transparent")setShapeFillColor("#8b5cf6");setFocusToolMenu(value=>value==="fill"?null:"fill");}}><PaintBucket className="size-4"/><span>Fill</span></button>
+          <button type="button" className={drawingTool==="fill"?"is-active":""} title="Fill tool — click any enclosed drawing region to fill it" aria-label="Fill" aria-pressed={drawingTool==="fill"} aria-expanded={focusToolMenu==="fill"} onClick={()=>{setToolbarMode("draw");setToolShelfOpen(false);setDrawingTool("fill");if(shapeFillColor==="transparent")setShapeFillColor("#8b5cf6");setFocusToolMenu(value=>value==="fill"?null:"fill");}}><PaintBucket className="size-4"/><span>Fill</span></button>
           {focusToolMenu==="layers"?<div className="normal-tool-popover normal-tool-popover-layers" role="menu" aria-label="Layer controls">
             {selectedIds.size||selectedShapeIds.size?<><button type="button" role="menuitem" onClick={()=>{layerSelected(true);setFocusToolMenu(null);}}><ArrowUpToLine className="size-4"/>Bring to front</button><button type="button" role="menuitem" onClick={()=>{layerSelected(false);setFocusToolMenu(null);}}><ArrowDownToLine className="size-4"/>Send to back</button></>:<div className="normal-tool-hint">Select a note or shape first.</div>}
           </div>:null}
           {focusToolMenu==="fill"?<div className="normal-tool-popover normal-tool-popover-fill" role="menu" aria-label="Fill controls">
-            <div className="normal-tool-hint">{shapes.some(item=>selectedShapeIds.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"))?"Changes the selected shape and new shapes.":"Choose a fill for new rectangles/ellipses, or select one to recolor it."}</div>
-            <label className="normal-fill-color">Fill color<input aria-label="Shape fill color" type="color" value={(shapes.find(item=>selectedShapeIds.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse")&&item.fill!=="transparent")?.fill)||(shapeFillColor!=="transparent"?shapeFillColor:"#8b5cf6")} onChange={event=>applyShapeFill(event.target.value)}/></label>
+            <div className="normal-tool-hint">{shapes.some(item=>selectedShapeIds.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"||item.kind==="path"))?"Changes the selected shape and new shapes.":"Choose a color, then click inside any closed drawing boundary."}</div>
+            <label className="normal-fill-color">Fill color<input aria-label="Shape fill color" type="color" value={(shapes.find(item=>selectedShapeIds.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"||item.kind==="path")&&item.fill!=="transparent")?.fill)||(shapeFillColor!=="transparent"?shapeFillColor:"#8b5cf6")} onChange={event=>applyShapeFill(event.target.value)}/></label>
             <button type="button" role="menuitem" onClick={()=>{applyShapeFill("transparent");setFocusToolMenu(null);}}><X className="size-4"/>No fill</button>
           </div>:null}
         </div>:undefined}
@@ -4786,14 +4833,14 @@ export function PageEditor(props: PageEditorProps) {
         <button type="button" className={drawingTool==="lasso"?"is-active":""} title="Lasso" onClick={()=>{setFocusToolMenu(null);setToolShelfOpen(false);setToolbarMode("draw");setDrawToolbarPanel("ink");setDrawingTool("lasso");}}><MousePointer2 className="size-5"/></button>
         <span/>
         <button type="button" className={focusToolMenu==="layers"?"is-menu-open":""} title="Layers" aria-expanded={focusToolMenu==="layers"} disabled={!selectedIds.size&&!selectedShapeIds.size} onClick={()=>setFocusToolMenu(value=>value==="layers"?null:"layers")}><Layers className="size-5"/></button>
-        <button type="button" className={drawingTool==="fill"?"is-active":""} title="Fill tool — click a rectangle or ellipse to fill it" aria-label="Fill" aria-pressed={drawingTool==="fill"} aria-expanded={focusToolMenu==="fill"} onClick={()=>{setToolbarMode("draw");setToolShelfOpen(false);setDrawingTool("fill");if(shapeFillColor==="transparent")setShapeFillColor("#8b5cf6");setFocusToolMenu(value=>value==="fill"?null:"fill");}}><PaintBucket className="size-5"/></button>
+        <button type="button" className={drawingTool==="fill"?"is-active":""} title="Fill tool — click any enclosed drawing region to fill it" aria-label="Fill" aria-pressed={drawingTool==="fill"} aria-expanded={focusToolMenu==="fill"} onClick={()=>{setToolbarMode("draw");setToolShelfOpen(false);setDrawingTool("fill");if(shapeFillColor==="transparent")setShapeFillColor("#8b5cf6");setFocusToolMenu(value=>value==="fill"?null:"fill");}}><PaintBucket className="size-5"/></button>
         <button type="button" title="Undo" disabled={!historyRef.current.undo.length} onClick={()=>{setFocusToolMenu(null);undoCanvas();}}><Undo2 className="size-5"/></button>
         {focusToolMenu==="layers"?<div className="focus-tool-popover focus-tool-popover-layers" role="menu" aria-label="Layer controls">
           <button type="button" role="menuitem" onClick={()=>{layerSelected(true);setFocusToolMenu(null);}}><ArrowUpToLine className="size-4"/>Bring to front</button>
           <button type="button" role="menuitem" onClick={()=>{layerSelected(false);setFocusToolMenu(null);}}><ArrowDownToLine className="size-4"/>Send to back</button>
         </div>:null}
         {focusToolMenu==="fill"?<div className="focus-tool-popover focus-tool-popover-fill" role="menu" aria-label="Fill controls">
-          <label className="focus-fill-color">Fill color<input aria-label="Focused mode shape fill color" type="color" value={(shapes.find(item=>selectedShapeIds.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse")&&item.fill!=="transparent")?.fill)||(shapeFillColor!=="transparent"?shapeFillColor:"#8b5cf6")} onChange={event=>applyShapeFill(event.target.value)}/></label>
+          <label className="focus-fill-color">Fill color<input aria-label="Focused mode shape fill color" type="color" value={(shapes.find(item=>selectedShapeIds.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"||item.kind==="path")&&item.fill!=="transparent")?.fill)||(shapeFillColor!=="transparent"?shapeFillColor:"#8b5cf6")} onChange={event=>applyShapeFill(event.target.value)}/></label>
           <button type="button" role="menuitem" onClick={()=>{applyShapeFill("transparent");setFocusToolMenu(null);}}><X className="size-4"/>No fill</button>
         </div>:null}
       </div> : null}
@@ -4892,8 +4939,8 @@ export function PageEditor(props: PageEditorProps) {
           <input title="Shape stroke color" aria-label="Shape stroke color" type="color" value={penColor} onChange={e=>setPenColor(e.target.value)} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"/>
           <span className="mx-0.5 h-5 w-px bg-white/10"/>
           <PaintBucket className="size-4 shrink-0 text-neutral-500"/>
-          <input title="Fill color for rectangles and ellipses" aria-label="New shape fill color" type="color" value={shapeFillColor!=="transparent"?shapeFillColor:"#8b5cf6"} onChange={e=>setShapeFillColor(e.target.value)} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"/>
-          <button type="button" title="Toggle fill for new rectangles and ellipses" className={cn("rounded px-1.5 py-1 text-[10px] text-neutral-400 hover:bg-white/10 hover:text-white",shapeFillColor!=="transparent"&&"bg-violet-500/20 text-violet-200")} onClick={()=>setShapeFillColor(value=>value==="transparent"?"#8b5cf6":"transparent")}>{shapeFillColor==="transparent"?"No fill":"Filled"}</button>
+          <input title="Fill color for shapes and bucket regions" aria-label="New shape fill color" type="color" value={shapeFillColor!=="transparent"?shapeFillColor:"#8b5cf6"} onChange={e=>setShapeFillColor(e.target.value)} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"/>
+          <button type="button" title="Toggle fill for new rectangles, ellipses, and bucket regions" className={cn("rounded px-1.5 py-1 text-[10px] text-neutral-400 hover:bg-white/10 hover:text-white",shapeFillColor!=="transparent"&&"bg-violet-500/20 text-violet-200")} onClick={()=>setShapeFillColor(value=>value==="transparent"?"#8b5cf6":"transparent")}>{shapeFillColor==="transparent"?"No fill":"Filled"}</button>
           <CustomSizeInput title="Shape line width — type any positive value" ariaLabel="Shape line width" value={penWidth} recommended={[1,1.5,2.5,4,6,9]} onCommit={setPenWidth} className="w-20"/>
         </>}
         {drawToolbarPanel==="ai"&&<>
@@ -4926,8 +4973,8 @@ export function PageEditor(props: PageEditorProps) {
         {(selectedIds.size>0||selectedShapeIds.size>0)&&<><button title="Bring to front" className="rounded p-1.5 text-neutral-400 hover:bg-white/10 hover:text-white" onClick={()=>layerSelected(true)}><ArrowUpToLine className="size-4"/></button><button title="Send to back" className="rounded p-1.5 text-neutral-400 hover:bg-white/10 hover:text-white" onClick={()=>layerSelected(false)}><ArrowDownToLine className="size-4"/></button></>}
         {selectedShapeIds.size>0&&<>
           <input title="Shape stroke color" aria-label="Shape stroke color" type="color" value={shapes.find(s=>selectedShapeIds.has(s.id))?.stroke??penColor} onChange={e=>{pushHistory();const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)?{...item,stroke:e.target.value}:item));}} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"/>
-          {shapes.some(s=>selectedShapeIds.has(s.id)&&(s.kind==="rectangle"||s.kind==="ellipse"))&&<>
-            <input title="Shape fill color" aria-label="Shape fill color" type="color" value={(shapes.find(s=>selectedShapeIds.has(s.id)&&s.fill!=="transparent")?.fill as string)||"#8b5cf6"} onChange={e=>{pushHistory();const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse")?{...item,fill:e.target.value}:item));}} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"/>
+          {shapes.some(s=>selectedShapeIds.has(s.id)&&(s.kind==="rectangle"||s.kind==="ellipse"||s.kind==="path"))&&<>
+            <input title="Shape fill color" aria-label="Shape fill color" type="color" value={(shapes.find(s=>selectedShapeIds.has(s.id)&&s.fill!=="transparent")?.fill as string)||"#8b5cf6"} onChange={e=>{pushHistory();const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)&&(item.kind==="rectangle"||item.kind==="ellipse"||item.kind==="path")?{...item,fill:e.target.value}:item));}} className="h-6 w-7 cursor-pointer rounded border-0 bg-transparent p-0"/>
             <button title="No shape fill" className="rounded px-1.5 py-1 text-[10px] text-neutral-400 hover:bg-white/10 hover:text-white" onClick={()=>{pushHistory();const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)?{...item,fill:"transparent"}:item));}}>No fill</button>
           </>}
           <CustomSizeInput title="Shape line width — type any positive value" ariaLabel="Selected shape line width" value={shapes.find(s=>selectedShapeIds.has(s.id))?.strokeWidth??2} recommended={[1,2,3,5,8]} onCommit={strokeWidth=>{pushHistory();const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)?{...item,strokeWidth}:item));}} className="w-20"/>
@@ -4965,10 +5012,11 @@ export function PageEditor(props: PageEditorProps) {
               const up=()=>{commitCanvas();window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",up);};
               window.addEventListener("pointermove",move);window.addEventListener("pointerup",up);
             };
-            const common={stroke:themeAwareStroke(shape.stroke,theme),strokeWidth:shape.strokeWidth,fill:shape.fill,className:`canvas-shape ${selected?"is-selected":""}`,"data-shape-id":shape.id,style:{pointerEvents:drawingTool==="fill"?"all":"visiblePainted"} as CSSProperties,onPointerDown:onShapePointerDown};
+            const common={stroke:themeAwareStroke(shape.stroke,theme),strokeWidth:shape.strokeWidth,fill:shape.fill,strokeLinejoin:"round" as const,strokeLinecap:"round" as const,className:`canvas-shape ${selected?"is-selected":""}`,"data-shape-id":shape.id,style:{pointerEvents:drawingTool==="fill"?"all":"visiblePainted"} as CSSProperties,onPointerDown:onShapePointerDown};
             const transform=shape.rotation?`rotate(${shape.rotation} ${cx} ${cy})`:undefined;
             if(shape.kind==="rectangle")return <rect key={shape.id} x={b.left} y={b.top} width={Math.max(1,b.right-b.left)} height={Math.max(1,b.bottom-b.top)} transform={transform} {...common}/>;
             if(shape.kind==="ellipse")return <ellipse key={shape.id} cx={cx} cy={cy} rx={Math.max(1,Math.abs(shape.x2-shape.x1)/2)} ry={Math.max(1,Math.abs(shape.y2-shape.y1)/2)} transform={transform} {...common}/>;
+            if(shape.kind==="path"&&shape.pathLoops?.length)return <path key={shape.id} d={fillPathData(shape.pathLoops,b)} fillRule="evenodd" transform={transform} {...common}/>;
             return <line key={shape.id} x1={shape.x1} y1={shape.y1} x2={shape.x2} y2={shape.y2} markerEnd={shape.kind==="arrow"?"url(#lenota-arrow)":undefined} {...common}/>;
           })}
         </svg>
@@ -4990,8 +5038,8 @@ export function PageEditor(props: PageEditorProps) {
         })}
         <svg className="canvas-ink-layer pointer-events-none absolute inset-0 z-[900000] overflow-visible" width="8000" height="8000" aria-hidden="true">
           {ink.map(stroke=><g key={stroke.id}>
-            {selectedInkIds.has(stroke.id)&&<path d={strokePath(stroke.points)} fill="none" stroke="#a78bfa" strokeWidth={stroke.width+7} strokeLinecap="round" strokeLinejoin="round" opacity=".28"/>}
-            <path d={strokePath(stroke.points)} fill="none" stroke={themeAwareStroke(stroke.color,theme)} strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" opacity={stroke.tool==="highlighter"?.32:1} style={{mixBlendMode:stroke.tool==="highlighter"?"multiply":"normal"}}/>
+            {selectedInkIds.has(stroke.id)&&<path d={inkPathData(stroke.points)} fill="none" stroke="#a78bfa" strokeWidth={stroke.width+7} strokeLinecap="round" strokeLinejoin="round" opacity=".28"/>}
+            <path d={inkPathData(stroke.points)} fill="none" stroke={themeAwareStroke(stroke.color,theme)} strokeWidth={stroke.width} strokeLinecap="round" strokeLinejoin="round" opacity={stroke.tool==="highlighter"?.32:1} style={{mixBlendMode:stroke.tool==="highlighter"?"multiply":"normal"}}/>
           </g>)}
           {lassoPath&&lassoPath.length>1&&<path className="lasso-preview" d={`${strokePath(lassoPath)} Z`} fill={drawingTool==="ask"?"rgba(34,211,238,.07)":"rgba(139,92,246,.05)"} stroke={drawingTool==="ask"?"#67e8f9":"#a78bfa"} strokeWidth={1.5/stateRef.current.viewport.zoom} strokeDasharray={`${6/stateRef.current.viewport.zoom} ${5/stateRef.current.viewport.zoom}`}/>} 
         </svg>
@@ -5053,7 +5101,7 @@ export function PageEditor(props: PageEditorProps) {
             <label className="flex items-center justify-between text-[11px] font-medium text-neutral-500">Stroke
               <input aria-label="Shape stroke color" type="color" value={selectedShape.stroke} onChange={event=>{const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)?{...item,stroke:event.target.value}:item));}} className="h-8 w-12 rounded border border-white/10 bg-transparent p-0.5"/>
             </label>
-            {(selectedShape.kind==="rectangle"||selectedShape.kind==="ellipse")?<label className="flex items-center justify-between text-[11px] font-medium text-neutral-500">Fill
+            {(selectedShape.kind==="rectangle"||selectedShape.kind==="ellipse"||selectedShape.kind==="path")?<label className="flex items-center justify-between text-[11px] font-medium text-neutral-500">Fill
               <input aria-label="Shape fill color" type="color" value={selectedShape.fill==="transparent"?"#8b5cf6":selectedShape.fill} onChange={event=>{setShapeFillColor(event.target.value);const ids=new Set(selectedShapeIds);mutateShapes(items=>items.map(item=>ids.has(item.id)?{...item,fill:event.target.value}:item));}} className="h-8 w-12 rounded border border-white/10 bg-transparent p-0.5"/>
             </label>:null}
             <label className="flex items-center justify-between gap-3 text-[11px] font-medium text-neutral-500">Line width

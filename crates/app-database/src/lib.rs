@@ -1572,7 +1572,7 @@ fn validate_canvas_document(parsed: &serde_json::Value) -> Result<()> {
         }
         for shape in shapes {
             let kind = shape.get("kind").and_then(|value| value.as_str());
-            if !matches!(kind, Some("rectangle" | "ellipse" | "line" | "arrow")) {
+            if !matches!(kind, Some("rectangle" | "ellipse" | "line" | "arrow" | "path")) {
                 return Err(DatabaseError::Validation("canvas shape has an invalid kind".into()));
             }
             for key in ["x1", "y1", "x2", "y2", "strokeWidth"] {
@@ -1584,6 +1584,35 @@ fn validate_canvas_document(parsed: &serde_json::Value) -> Result<()> {
             let width = shape.get("strokeWidth").and_then(|value| value.as_f64()).unwrap_or(0.0);
             if width <= 0.0 || width > 100.0 {
                 return Err(DatabaseError::Validation("canvas shape has an invalid stroke width".into()));
+            }
+            if kind == Some("path") {
+                let loops = shape
+                    .get("pathLoops")
+                    .and_then(|value| value.as_array())
+                    .ok_or_else(|| DatabaseError::Validation("canvas path shape must contain path loops".into()))?;
+                if loops.is_empty() || loops.len() > 10_000 {
+                    return Err(DatabaseError::Validation("canvas path shape has an invalid loop count".into()));
+                }
+                let mut point_count = 0usize;
+                for loop_value in loops {
+                    let points = loop_value.as_array()
+                        .ok_or_else(|| DatabaseError::Validation("canvas path loop must be an array".into()))?;
+                    if points.len() < 3 {
+                        return Err(DatabaseError::Validation("canvas path loop must contain at least three points".into()));
+                    }
+                    point_count = point_count.saturating_add(points.len());
+                    if point_count > 250_000 {
+                        return Err(DatabaseError::Validation("canvas path shape contains too many points".into()));
+                    }
+                    for point in points {
+                        for key in ["x", "y"] {
+                            let number = point.get(key).and_then(|value| value.as_f64());
+                            if match number { Some(value) => !value.is_finite() || value < -0.01 || value > 1.01, None => true } {
+                                return Err(DatabaseError::Validation(format!("canvas path point has an invalid {key}")));
+                            }
+                        }
+                    }
+                }
             }
         }
         let background = parsed

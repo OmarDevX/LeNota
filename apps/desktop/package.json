@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node node_modules/vite/bin/vite.js",
     "build": "node node_modules/typescript/lib/tsc.js -b && node node_modules/vite/bin/vite.js build",
-    "test:math": "node --experimental-strip-types --test tests/app-layout.test.mts tests/math-ink-structure.test.mts tests/mixed-math-composer.test.mts tests/latex-repair.test.mts tests/recent-math-session.test.mts tests/cloud-ai-content.test.mts tests/ink-container-target.test.mts tests/page-ai-context.test.mts tests/visual-selection.test.mts tests/canvas-coordinates.test.mts tests/recognized-text-placement.test.mts tests/equation-solver.test.mts",
+    "test:math": "node --experimental-strip-types --test tests/app-layout.test.mts tests/math-ink-structure.test.mts tests/mixed-math-composer.test.mts tests/latex-repair.test.mts tests/recent-math-session.test.mts tests/cloud-ai-content.test.mts tests/ink-container-target.test.mts tests/page-ai-context.test.mts tests/visual-selection.test.mts tests/canvas-coordinates.test.mts tests/recognized-text-placement.test.mts tests/equation-solver.test.mts tests/fill-regions.test.mts",
     "test:ai-worker": "python3 -m unittest tests/test_cloud_ai_worker.py",
     "typecheck": "node node_modules/typescript/lib/tsc.js -b --pretty false",
     "preview": "node node_modules/vite/bin/vite.js preview",

@@ -200,9 +200,9 @@ test("normal toolbar owns Layers and Fill, Inspector is reachable, and canvas se
   const editorSource = readFileSync(new URL("../src/features/editor/page-editor.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
   assert.match(editorSource, /contextTools=\{!focusMode\?<div className="workspace-context-tools"/);
-  assert.match(editorSource, /title="Fill tool — click a rectangle or ellipse to fill it" aria-label="Fill" aria-pressed=\{drawingTool==="fill"\}/);
+  assert.match(editorSource, /title="Fill tool — click any enclosed drawing region to fill it" aria-label="Fill" aria-pressed=\{drawingTool==="fill"\}/);
   assert.match(editorSource, /type DrawingTool = [^;]*"fill"/);
-  assert.match(editorSource, /if\(drawingTool==="fill"\)\{[\s\S]*?dataset\.shapeId[\s\S]*?mutateShapes/);
+  assert.match(editorSource, /if\(drawingTool==="fill"\)\{[\s\S]*?findEnclosedFillRegion[\s\S]*?normalizeFillLoops[\s\S]*?mutateShapes/);
   assert.match(editorSource, /const \[shapeFillColor, setShapeFillColor\] = useState\("transparent"\)/);
   assert.match(editorSource, /fill:\(drawingTool==="rectangle"\|\|drawingTool==="ellipse"\)\?shapeFillColor:"transparent"/);
   assert.match(editorSource, /aria-label="Toggle inspector" aria-pressed=\{inspectorOpen\}/);
@@ -221,4 +221,17 @@ test("the visible build marker matches package and Tauri versions", () => {
   assert.equal(packageJson.version, LENOTA_VERSION);
   assert.equal(tauriConfig.version, LENOTA_VERSION);
   assert.equal(tauriConfig.app.windows[0]?.title.includes(LENOTA_VERSION), true);
+});
+
+
+test("zoom performance stays conservative and avoids the experimental paper canvas", () => {
+  const editorSource = readFileSync(new URL("../src/features/editor/page-editor.tsx", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
+  assert.match(editorSource, /wheelRectRef = useRef<DOMRect \| null>\(null\)/);
+  assert.match(editorSource, /const pinchDelta=clamp\(dy,-48,48\)/);
+  assert.match(editorSource, /Math\.exp\(-pinchDelta\*\.0018\)/);
+  assert.match(editorSource, /inkPathCacheRef = useRef\(new WeakMap<InkPoint\[\], string>\(\)\)/);
+  assert.equal(editorSource.includes("paperCanvasRef"), false);
+  assert.equal(editorSource.includes("pendingWheelMotionRef"), false);
+  assert.equal(css.includes("canvas-paper-layer"), false);
 });
