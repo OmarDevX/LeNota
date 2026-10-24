@@ -1,0 +1,14 @@
+Smooth Canvas Navigation Stage 3 - Fedora
+
+1. Back up your notes and attachments. Keep the Stage 2 project as rollback.
+2. Close all running LeNota instances.
+3. For normal studying run:
+      bash RUN_SMOOTH_APP.sh
+   The first native release build may take some time.
+4. For development or hot reload use:
+      bash RUN_UPDATED_APP.sh
+5. If actual stale/ghost tiles remain (NOT mere lag), optionally test:
+      LENOTA_SAFE_RENDERER=1 bash RUN_SMOOTH_APP.sh
+
+Includes previous Stage 1 viewport virtualization and Stage 2 object-store changes.
+No new database migration is introduced by Stage 3, but this inherits Stage 2's database format; don't run an older pre-Stage2 executable against an already-migrated production database.

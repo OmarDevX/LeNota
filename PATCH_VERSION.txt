@@ -1,0 +1,113 @@
+AI reliability update (2026-10-18): improved ChatGPT stream budget and OpenRouter live free catalog. See AI_TIMEOUT_STABILITY.md.
+Long Ask table correction: gemini-r6
+Expected badge: v0.33.2 · ink-r3 · gemini-r6 · pdf-r2 · perf-r4
+See ASK_TABLE_FIX.md. Run bash RUN_SMOOTH_APP.sh.
+
+Earlier revision notes:
+
+Container scrolling correction: perf-r4
+Expected badge: v0.33.2 · ink-r3 · gemini-r5 · pdf-r2 · perf-r4
+See CONTAINER_SCROLL_FIX.md. Run bash RUN_SMOOTH_APP.sh.
+
+Earlier revision notes:
+
+Graph and drawing correction: gemini-r5 / perf-r3
+Expected badge: v0.33.2 · ink-r3 · gemini-r5 · pdf-r2 · perf-r3
+See GRAPH_AND_DRAWING_FIX.md. Run bash RUN_SMOOTH_APP.sh.
+
+Earlier revision notes:
+
+Panning/scrolling correction: perf-r2
+Expected badge: v0.33.2 · ink-r3 · gemini-r4 · pdf-r2 · perf-r2
+See SCROLLING_FIX.md. Run bash RUN_SMOOTH_APP.sh.
+
+Smoothness update: perf-r1
+Expected badge: v0.33.2 · ink-r3 · gemini-r4 · pdf-r2 · perf-r1
+Run bash RUN_SMOOTH_APP.sh. See PERFORMANCE.md.
+
+PDF image loading correction: pdf-r2
+Expected badge: v0.33.2 · ink-r3 · gemini-r4 · pdf-r2
+See PDF_PRINTOUT.md. Rebuild and reopen the existing note.
+
+Gemini correction: gemini-r4
+Expected badge: v0.33.2 · ink-r3 · gemini-r4
+See GEMINI_FIX.md for rebuild steps and verification.
+
+LeNota reference workspace patch
+Version: 0.33.2
+
+Expected visible badge: v0.33.2 · ink-r3
+
+Run from this extracted directory:
+  ./RUN_UPDATED_APP.sh
+
+This build completes the device-neutral pen input system. Pen buttons and keyboard
+keys can be assigned from Draw > Ink > Pen & input settings; the defaults make
+the usual secondary/eraser buttons temporarily erase while held, but no tablet
+brand is hard-coded. The eraser removes a complete connected stroke with one
+touch. The Pencil Wheel opens around the current pointer (R by default) and
+offers Pencil, Ballpoint, Fountain pen, Felt tip, saved custom pencils,
+highlighter, and eraser.
+
+Hold to move canvas is now a first-class binding instead of a hard-coded
+shortcut. It defaults to Space and pen/mouse button 1, works while any drawing
+tool is selected, and can be reassigned or cleared like every other input action.
+
+Pen pressure now changes the rendered width. Each pencil has editable width,
+opacity, pressure response, and smoothing, and the result can be saved as a
+custom pencil. High-rate pointer input consumes raw and coalesced hardware samples. The live
+stroke now bypasses React's editor-wide render path entirely: one dedicated SVG
+preview is updated on animation frames and the finished immutable stroke is
+committed to React only on pen-up. Fast input also uses a wider screen-space gap
+bound instead of manufacturing a point every 2.4 pixels, and overlapping
+pointerrawupdate/pointermove history is rejected by timestamp so old coalesced
+samples cannot briefly pull the line backwards. Very long strokes are rendered
+in baked chunks plus a short live tail, keeping per-frame work bounded instead
+of growing with the total scribble length. The ink centerline keeps more of the
+tablet's real turns and uses a stable midpoint curve that cannot overshoot
+sparse fast-writing samples.
+Pressure outlines use true circular start/end dabs, restoring the older rounded
+pencil feel instead of sharp points.
+
+Pressure response is no longer filtered twice by geometric smoothing. Standard
+Pointer Events pressure and WebKit force fallbacks are read through one input
+path, then mapped through a saved tablet calibration range. On Linux, a native
+GTK stylus-axis bridge recovers real force when WebKit incorrectly labels a pen
+as a mouse and substitutes a fixed 50% value. The bridge observes events only
+after WebKit handles them, so pen-tip clicks, drawing, and side-button bindings
+remain fully interactive. Built-in pencils
+now have clearly visible light-to-firm width ranges. Pen & input settings also
+includes a live pressure test: it reports the raw and mapped force, detects a
+varying range, can calibrate to that range, and clearly warns when the driver is
+only sending a fixed value or no pressure data.
+
+Focus Mode now clears its working area automatically. Clicking or drawing on
+the canvas, or typing into a note, hides the top tool bar and page strip. Small
+top and side edge handles reveal them independently; each surface also has its
+own manual collapse button. A persistent bottom toggle switches between this
+auto-hide behavior and keeping Focus Mode controls pinned on screen. Short
+windows retain a compact scrollable page strip instead of making it unreachable.
+The complete top toolbar now slides above the screen as one surface; its rounded
+background, border, shadow, buttons, and popovers no longer leave an empty shell
+behind when Focus Mode hides it.
+Interactions inside the revealed toolbar and its contextual second shelf are
+now excluded from the canvas auto-hide trigger. Choosing a pencil, panel,
+formatting option, or other shelf control keeps both tool surfaces available;
+they hide again only after input returns to the page.
+
+An empty database now shows a working creation screen instead of a black dead
+end. Its primary action can create the missing notebook, subject section, and
+page in one flow. Compact windows use an overlay navigation drawer, scrolling
+tool shelves, an overlay Inspector, and reduced chrome; the desktop window can
+now be resized down to 520 x 480.
+
+If the application header does not show v0.33.2, a different copy is running.
+
+
+Ink-r3 correction:
+- Linux native GDK motion coordinates are forwarded directly to active ink.
+- GDK event compression is disabled for the WebView so fast pointer motion is not reduced to a few polygon anchors.
+- Native coordinates also work for ordinary mice when no pressure axis exists.
+- DOM pointer events remain as the browser/non-Linux fallback.
+- Shallow real curves are no longer discarded by the legacy collinear-point cleanup.
+- Built-in pen smoothing defaults are stronger.

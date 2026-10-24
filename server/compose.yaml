@@ -1,0 +1,15 @@
+services:
+  sync:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    environment:
+      LENOTA_ALLOW_SIGNUP: "1"
+      LENOTA_USER_QUOTA_MB: "1024"
+    volumes:
+      - sync-data:/data
+    ports:
+      - "127.0.0.1:8787:8787"
+volumes:
+  sync-data:

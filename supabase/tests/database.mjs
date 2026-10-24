@@ -1,0 +1,61 @@
+// Executes the actual migration/functions in PostgreSQL, including RLS under
+// non-owner roles. Mock only the Supabase-managed auth/storage schemas.
+import { PGlite } from '@electric-sql/pglite';
+import { readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const db = new PGlite();
+const A='11111111-1111-4111-8111-111111111111';
+const B='22222222-2222-4222-8222-222222222222';
+let checks=0;
+const empty=()=>Object.fromEntries(['notebooks','section_groups','sections','pages','tags','page_tags','page_revisions','trash_entries','attachments'].map(t=>[t,{}]));
+await db.exec(`
+  CREATE ROLE anon; CREATE ROLE authenticated;
+  CREATE SCHEMA auth; CREATE SCHEMA storage;
+  CREATE TABLE auth.users(id uuid PRIMARY KEY);
+  INSERT INTO auth.users VALUES('${A}'),('${B}');
+  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
+  CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean,file_size_limit bigint);
+  CREATE TABLE storage.objects(id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,bucket_id text,name text,metadata jsonb);
+  ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+  CREATE FUNCTION storage.foldername(name text) RETURNS text[] LANGUAGE sql IMMUTABLE AS $$ SELECT (string_to_array(name,'/'))[1:array_length(string_to_array(name,'/'),1)-1] $$;
+  GRANT USAGE ON SCHEMA auth,storage TO authenticated,anon;
+  GRANT SELECT,INSERT,UPDATE,DELETE ON storage.objects TO authenticated;
+  GRANT USAGE,SELECT ON ALL SEQUENCES IN SCHEMA storage TO authenticated;
+`);
+const setup=await readFile(new URL('../setup.sql',import.meta.url),'utf8');
+await db.exec(setup);await db.exec(setup);checks++;
+async function user(id){await db.exec(`RESET ROLE; SET ROLE authenticated; SET "request.jwt.claim.sub"='${id}';`);}
+async function rpc(name,args){const vals=args.map((_,i)=>`$${i+1}`).join(',');return (await db.query(`SELECT public.${name}(${vals}) AS value`,args)).rows[0].value;}
+await user(A);
+const first=await rpc('lenota_pull',[-1]);assert.equal(first.version,0);assert.deepEqual(first.snapshot,empty());checks++;
+const snap=empty();snap.notebooks.n={id:'n',name:'PC notebook'};
+assert.deepEqual(await rpc('lenota_push',[0,snap]),{committed:true,version:1});checks++;
+assert.deepEqual(await rpc('lenota_pull',[1]),{version:1,snapshot:null});checks++;
+const other=empty();other.notebooks.phone={id:'phone',name:'Phone notebook'};
+assert.deepEqual(await rpc('lenota_push',[0,other]),{committed:false,version:1});
+assert.deepEqual((await rpc('lenota_pull',[-1])).snapshot,snap);checks++;
+await user(B);
+assert.deepEqual((await rpc('lenota_pull',[-1])).snapshot,empty());
+assert.equal((await db.query('SELECT count(*)::int AS n FROM public.lenota_workspaces')).rows[0].n,1);checks++;
+assert.equal((await db.query('UPDATE public.lenota_workspaces SET version=9 WHERE user_id=$1 RETURNING user_id',[A])).rows.length,0);checks++;
+await assert.rejects(db.query('INSERT INTO public.lenota_workspaces(user_id) VALUES($1)',[A]));checks++;
+await db.exec('RESET ROLE; SET ROLE anon;');
+await assert.rejects(rpc('lenota_pull',[-1]));
+await assert.rejects(db.query('SELECT * FROM public.lenota_workspaces'));checks++;
+await user(A);
+const withFile=structuredClone(snap);
+withFile.attachments.a={id:'a',page_id:'p',stored_path:'image.png',size_bytes:4};
+await assert.rejects(rpc('lenota_push',[1,withFile]));
+assert.equal((await rpc('lenota_pull',[-1])).version,1);checks++;
+await db.query('INSERT INTO storage.objects(bucket_id,name,metadata) VALUES($1,$2,$3)', ['lenota-notes',`${A}/a/image.png`,{size:4}]);
+assert.deepEqual(await rpc('lenota_push',[1,withFile]),{committed:true,version:2});checks++;
+await user(B);
+assert.equal((await db.query('SELECT count(*)::int AS n FROM storage.objects')).rows[0].n,0);checks++;
+await assert.rejects(db.query('INSERT INTO storage.objects(bucket_id,name,metadata) VALUES($1,$2,$3)', ['lenota-notes',`${A}/b/file.txt`,{size:4}]));checks++;
+const alien=empty();alien.attachments.a=withFile.attachments.a;
+await assert.rejects(rpc('lenota_push',[0,alien]));checks++;
+await user(A);
+assert.equal((await db.query('DELETE FROM storage.objects RETURNING id')).rows.length,0);
+assert.equal((await db.query('UPDATE storage.objects SET metadata=$1 RETURNING id',[{size:9}])).rows.length,0);checks++;
+await user('');await assert.rejects(rpc('lenota_pull',[-1]));checks++;
+await db.close();console.log(`PASS: ${checks} PostgreSQL schema, CAS, file validation, and account isolation checks.`);

@@ -1,0 +1,43 @@
+name: Mobile
+on:
+  workflow_dispatch:
+  push:
+    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', '.github/workflows/mobile.yml']
+  pull_request:
+    paths: ['apps/desktop/**', 'crates/**', 'Cargo.*', '.github/workflows/mobile.yml']
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android toolchain
+        run: |
+          sdkmanager 'platform-tools' 'platforms;android-37.0' 'platforms;android-36' 'build-tools;37.0.0' 'build-tools;36.0.0' 'ndk;27.2.12479018'
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi
+      - run: npm ci
+      - run: npm run test:mobile
+      - name: Build installable 32-bit and 64-bit ARM APK
+        run: npm run android:apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LeNota-Android-debug
+          path: apps/desktop/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error

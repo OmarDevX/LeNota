@@ -1,0 +1,43 @@
+# Frontend
+node_modules/
+dist/
+.bun/
+
+# Rust
+target/
+**/*.rs.bk
+
+# Tauri bundles
+apps/desktop/src-tauri/target/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Runtime data
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.log
+
+# Mobile local toolchains and generated build output
+apps/desktop/src-tauri/gen/android/.gradle/
+apps/desktop/src-tauri/gen/android/**/build/
+apps/desktop/src-tauri/gen/android/local.properties
+apps/desktop/src-tauri/gen/android/app/src/main/jniLibs/
+apps/desktop/src-tauri/gen/apple/build/
+apps/desktop/src-tauri/gen/apple/Externals/
+*.keystore
+*.jks
+__pycache__/
+
+# Browser test screenshots are generated locally
+apps/desktop/test-results/
+
+# Account server data contains private notes, sessions, and password hashes.
+sync-data/
+server/sync-data/
+__pycache__/
+*.pyc
